@@ -1,0 +1,80 @@
+[
+  {
+    "threat_id": "THREAT-1762618075-3444",
+    "timestamp": "2025-11-09T00:07:55.674049",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.201",
+    "dst_ip": "10.0.0.17",
+    "port": 50030,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1762618095-4528",
+    "timestamp": "2025-11-09T00:08:15.694995",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.151",
+    "dst_ip": "10.0.0.115",
+    "port": 53270,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1762618100-3181",
+    "timestamp": "2025-11-09T00:08:20.701438",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.204",
+    "dst_ip": "10.0.0.96",
+    "port": 23621,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1762618105-9743",
+    "timestamp": "2025-11-09T00:08:25.701733",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.180",
+    "dst_ip": "10.0.0.254",
+    "port": 36470,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1762618115-3980",
+    "timestamp": "2025-11-09T00:08:35.706492",
+    "threat_type": "\u75c5\u6bd2/\u6728\u9a6c",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.201",
+    "dst_ip": "10.0.0.45",
+    "port": 36696,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u75c5\u6bd2/\u6728\u9a6c\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1762618125-9048",
+    "timestamp": "2025-11-09T00:08:45.721633",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.174",
+    "dst_ip": "10.0.0.98",
+    "port": 6339,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

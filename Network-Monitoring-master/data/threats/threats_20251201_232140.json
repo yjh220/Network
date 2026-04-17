@@ -1,0 +1,41 @@
+[
+  {
+    "threat_id": "THREAT-1764602467-6295",
+    "timestamp": "2025-12-01T23:21:07.540915",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.2",
+    "dst_ip": "10.0.0.54",
+    "port": 54962,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764602482-1626",
+    "timestamp": "2025-12-01T23:21:22.574011",
+    "threat_type": "\u7aef\u53e3\u626b\u63cf",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.246",
+    "dst_ip": "10.0.0.194",
+    "port": 46624,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u7aef\u53e3\u626b\u63cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764602497-9550",
+    "timestamp": "2025-12-01T23:21:37.603579",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.216",
+    "dst_ip": "10.0.0.11",
+    "port": 56848,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

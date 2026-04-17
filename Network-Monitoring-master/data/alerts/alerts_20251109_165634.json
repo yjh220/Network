@@ -1,0 +1,50 @@
+[
+  {
+    "alert_id": "ALERT-1762678507-7590",
+    "timestamp": "2025-11-09T16:55:07.161361",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.249",
+    "dst_ip": "10.0.0.35",
+    "port": 14906,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1762678522-9611",
+    "timestamp": "2025-11-09T16:55:22.177347",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.217",
+    "dst_ip": "10.0.0.5",
+    "port": 23891,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1762678532-8555",
+    "timestamp": "2025-11-09T16:55:32.183063",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.69",
+    "dst_ip": "10.0.0.101",
+    "port": 30107,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1762678587-7715",
+    "timestamp": "2025-11-09T16:56:27.236451",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.190",
+    "dst_ip": "10.0.0.4",
+    "port": 32217,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "threat_id": "THREAT-1764556586-6661",
+    "timestamp": "2025-12-01T10:36:26.188229",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.222",
+    "dst_ip": "10.0.0.151",
+    "port": 63814,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764556591-3240",
+    "timestamp": "2025-12-01T10:36:31.194765",
+    "threat_type": "\u66b4\u529b\u7834\u89e3",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.212",
+    "dst_ip": "10.0.0.218",
+    "port": 43838,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u66b4\u529b\u7834\u89e3\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764556601-4123",
+    "timestamp": "2025-12-01T10:36:41.208457",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.156",
+    "dst_ip": "10.0.0.205",
+    "port": 4176,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764556606-5923",
+    "timestamp": "2025-12-01T10:36:46.215764",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.19",
+    "dst_ip": "10.0.0.127",
+    "port": 51176,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1764556651-8790",
+    "timestamp": "2025-12-01T10:37:31.306533",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.5",
+    "dst_ip": "10.0.0.164",
+    "port": 6425,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

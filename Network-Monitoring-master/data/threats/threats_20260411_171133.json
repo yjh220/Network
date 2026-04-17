@@ -1,0 +1,67 @@
+[
+  {
+    "threat_id": "THREAT-1775898591-6447",
+    "timestamp": "2026-04-11T17:09:51.550130",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.254",
+    "dst_ip": "10.0.0.39",
+    "port": 6700,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1775898601-8687",
+    "timestamp": "2026-04-11T17:10:01.550988",
+    "threat_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.64",
+    "dst_ip": "10.0.0.53",
+    "port": 15360,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1775898641-6829",
+    "timestamp": "2026-04-11T17:10:41.553904",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.136",
+    "dst_ip": "10.0.0.14",
+    "port": 65240,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1775898646-6335",
+    "timestamp": "2026-04-11T17:10:46.554359",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.248",
+    "dst_ip": "10.0.0.208",
+    "port": 19765,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1775898671-6739",
+    "timestamp": "2026-04-11T17:11:11.556308",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.137",
+    "dst_ip": "10.0.0.252",
+    "port": 8154,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

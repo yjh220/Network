@@ -1,0 +1,144 @@
+/* 主样式文件 - 网络科技风格 */
+
+:root {
+    --primary: #00d4ff;
+    --secondary: #8b5cf6;
+    --accent: #f472b6;
+    --dark: #0a0a0f;
+    --darker: #050508;
+    --card-bg: rgba(20, 20, 30, 0.7);
+    --text: #e2e8f0;
+}
+
+/* 全局样式 */
+body {
+    background: var(--darker);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+.navbar {
+    background-color: rgba(10, 10, 15, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.navbar-brand {
+    color: var(--primary) !important;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* 首页英雄区 */
+.hero-section {
+    padding: 80px 0;
+    margin-bottom: 30px;
+    text-align: center;
+    position: relative;
+}
+
+/* 状态卡片 */
+.status-card {
+    text-align: center;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.status-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: var(--primary);
+}
+
+.status-value.active { color: #00ff9f; }
+.status-value.inactive { color: #ff007f; }
+
+/* 仪表盘卡片 */
+.card {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--primary) !important;
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+}
+
+.card-title {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 24px;
+    margin: 0 auto 15px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* 威胁列表 */
+.threat-list-container {
+    max-height: 350px;
+    overflow-y: auto;
+    background: var(--dark);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.threat-list .threat-item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.threat-severity {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.severity-high { background-color: #ff007f; }
+.severity-medium { background-color: #ffd700; }
+.severity-low { background-color: #00ff9f; }
+
+/* 系统事件 */
+.event-item {
+    display: flex;
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.event-time { color: rgba(255, 255, 255, 0.5); }
+
+.event-type.info { color: var(--primary); }
+.event-type.success { color: #00ff9f; }
+.event-type.warning { color: #ffd700; }
+.event-type.error { color: #ff007f; }
+.event-type.alert { color: var(--secondary); }
+
+/* 滚动条美化 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--darker); }
+::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
