@@ -1,0 +1,478 @@
+{% extends "admin/base.html" %}
+
+{% block title %}用户管理 - 后台管理系统{% endblock %}
+
+{% block page_title %}用户管理{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header">
+        <div class="d-flex align-items-center gap-3">
+            <input type="text" class="form-control" id="searchInput" placeholder="搜索用户名或邮箱..." style="width: 250px;">
+            <select class="form-select" id="roleFilter" style="width: 150px;">
+                <option value="">全部角色</option>
+            </select>
+            <select class="form-select" id="statusFilter" style="width: 150px;">
+                <option value="">全部状态</option>
+                <option value="true">启用</option>
+                <option value="false">禁用</option>
+            </select>
+            <button class="btn btn-outline-secondary" id="resetBtn">
+                <i class="fas fa-redo"></i> 重置
+            </button>
+        </div>
+        <button class="btn btn-primary" id="addUserBtn">
+            <i class="fas fa-plus"></i> 新增用户
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>最后登录</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center p-3">
+        <div class="text-muted" id="tableInfo">显示 0 条记录</div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0" id="pagination">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalTitle">新增用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+
+                    <div class="mb-3">
+                        <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">邮箱 <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+
+                    <div class="mb-3" id="passwordGroup">
+                        <label class="form-label">密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" required>
+                        <div class="form-text">至少6个字符</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">角色 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="roleId" required>
+                            <option value="">请选择角色</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="statusGroup">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isActive" checked>
+                            <label class="form-check-label" for="isActive">
+                                启用账户
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveUserBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">重置密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="resetPasswordForm">
+                    <input type="hidden" id="resetUserId">
+                    <div class="mb-3">
+                        <label class="form-label">新密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="newPassword" required minlength="6">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">确认密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmResetBtn">确认重置</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let currentSearch = '';
+let currentRoleId = '';
+let currentStatus = '';
+const perPage = 20;
+
+// Load Users
+async function loadUsers() {
+    try {
+        let url = `/admin/api/users?page=${currentPage}&per_page=${perPage}`;
+        if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+        if (currentRoleId) url += `&role_id=${currentRoleId}`;
+        if (currentStatus !== '') url += `&is_active=${currentStatus}`;
+
+        const response = await apiRequest(url);
+        const { users, total } = response.data;
+
+        renderUserTable(users);
+        renderPagination(total);
+        document.getElementById('tableInfo').textContent = `显示 ${users.length} / ${total} 条记录`;
+
+    } catch (error) {
+        console.error('Failed to load users:', error);
+        document.getElementById('userTableBody').innerHTML = `
+            <tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>
+        `;
+    }
+}
+
+// Render User Table
+function renderUserTable(users) {
+    const tbody = document.getElementById('userTableBody');
+
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.id}</td>
+            <td><strong>${user.username}</strong></td>
+            <td>${user.email}</td>
+            <td><span class="badge bg-secondary">${user.role || '-'}</span></td>
+            <td>
+                ${user.is_active
+                    ? '<span class="badge badge-success">启用</span>'
+                    : '<span class="badge badge-danger">禁用</span>'
+                }
+                ${user.is_locked ? '<span class="badge badge-warning ms-1">已锁定</span>' : ''}
+            </td>
+            <td>${user.last_login ? formatDate(user.last_login) : '-'}</td>
+            <td>${formatDate(user.created_at)}</td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" onclick="editUser(${user.id})" title="编辑">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="resetPassword(${user.id})" title="重置密码">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deleteUser(${user.id}, '${user.username}')" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Render Pagination
+function renderPagination(total) {
+    const totalPages = Math.ceil(total / perPage);
+    const pagination = document.getElementById('pagination');
+
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    // Previous button
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">上一页</a>
+    </li>`;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${i})">${i}</a>
+            </li>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+
+    // Next button
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">下一页</a>
+    </li>`;
+
+    pagination.innerHTML = html;
+}
+
+// Go to Page
+function goToPage(page) {
+    if (page < 1) return;
+    currentPage = page;
+    loadUsers();
+}
+
+// Load Roles
+async function loadRoles() {
+    try {
+        const response = await apiRequest('/admin/api/roles?include_system=true');
+        const roles = response.data;
+
+        const roleFilter = document.getElementById('roleFilter');
+        const roleId = document.getElementById('roleId');
+
+        // 保存默认选项
+        const filterDefault = roleFilter ? roleFilter.innerHTML : '<option value="">所有角色</option>';
+        const roleDefault = '<option value="">请选择角色</option>';
+
+        // 构建选项HTML
+        const roleOptions = roles.map(role =>
+            `<option value="${role.id}">${role.name}</option>`
+        ).join('');
+
+        // 更新下拉框
+        if (roleFilter) {
+            roleFilter.innerHTML = filterDefault + roleOptions;
+        }
+        roleId.innerHTML = roleDefault + roleOptions;
+
+    } catch (error) {
+        console.error('Failed to load roles:', error);
+    }
+}
+
+// Add User
+document.getElementById('addUserBtn').addEventListener('click', function() {
+    document.getElementById('userModalTitle').textContent = '新增用户';
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('statusGroup').style.display = 'block';
+
+    new bootstrap.Modal(document.getElementById('userModal')).show();
+});
+
+// Edit User
+async function editUser(userId) {
+    try {
+        const response = await apiRequest(`/admin/api/users/${userId}`);
+        const user = response.data;
+
+        document.getElementById('userModalTitle').textContent = '编辑用户';
+        document.getElementById('userId').value = user.id;
+        document.getElementById('username').value = user.username;
+        document.getElementById('email').value = user.email;
+        document.getElementById('roleId').value = user.role_id;
+        document.getElementById('isActive').checked = user.is_active;
+
+        document.getElementById('passwordGroup').style.display = 'none';
+        document.getElementById('statusGroup').style.display = 'block';
+
+        new bootstrap.Modal(document.getElementById('userModal')).show();
+
+    } catch (error) {
+        console.error('Failed to load user:', error);
+    }
+}
+
+// Save User
+document.getElementById('saveUserBtn').addEventListener('click', async function() {
+    const userId = document.getElementById('userId').value;
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const roleId = document.getElementById('roleId').value;
+    const isActive = document.getElementById('isActive').checked;
+
+    // Validation
+    if (!username || !email || !roleId) {
+        Swal.fire('提示', '请填写所有必填项', 'warning');
+        return;
+    }
+
+    if (!userId && password.length < 6) {
+        Swal.fire('提示', '密码至少需要6个字符', 'warning');
+        return;
+    }
+
+    try {
+        const data = {
+            username,
+            email,
+            role_id: parseInt(roleId),
+            is_active: isActive
+        };
+
+        if (!userId) {
+            data.password = password;
+        }
+
+        const url = userId ? `/admin/api/users/${userId}` : '/admin/api/users';
+        const method = userId ? 'PUT' : 'POST';
+
+        await apiRequest(url, {
+            method,
+            body: JSON.stringify(data)
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+        showToast(userId ? '用户更新成功' : '用户创建成功');
+        loadUsers();
+
+    } catch (error) {
+        console.error('Failed to save user:', error);
+    }
+});
+
+// Reset Password
+function resetPassword(userId) {
+    document.getElementById('resetPasswordForm').reset();
+    document.getElementById('resetUserId').value = userId;
+    new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+}
+
+document.getElementById('confirmResetBtn').addEventListener('click', async function() {
+    const userId = document.getElementById('resetUserId').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!newPassword || !confirmPassword) {
+        Swal.fire('提示', '请填写所有字段', 'warning');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        Swal.fire('提示', '两次输入的密码不一致', 'warning');
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        Swal.fire('提示', '密码至少需要6个字符', 'warning');
+        return;
+    }
+
+    try {
+        await apiRequest(`/admin/api/users/${userId}/reset_password`, {
+            method: 'POST',
+            body: JSON.stringify({ new_password: newPassword })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+        showToast('密码重置成功');
+        loadUsers();
+
+    } catch (error) {
+        console.error('Failed to reset password:', error);
+    }
+});
+
+// Delete User
+function deleteUser(userId, username) {
+    Swal.fire({
+        title: '确认删除',
+        text: `确定要删除用户 "${username}" 吗？此操作不可恢复！`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await apiRequest(`/admin/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                showToast('用户删除成功');
+                loadUsers();
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+            }
+        }
+    });
+}
+
+// Search & Filter
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    currentSearch = e.target.value;
+    currentPage = 1;
+    loadUsers();
+});
+
+document.getElementById('roleFilter').addEventListener('change', function(e) {
+    currentRoleId = e.target.value;
+    currentPage = 1;
+    loadUsers();
+});
+
+document.getElementById('statusFilter').addEventListener('change', function(e) {
+    currentStatus = e.target.value;
+    currentPage = 1;
+    loadUsers();
+});
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('roleFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    currentSearch = '';
+    currentRoleId = '';
+    currentStatus = '';
+    currentPage = 1;
+    loadUsers();
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadRoles();
+    loadUsers();
+});
+</script>
+{% endblock %}

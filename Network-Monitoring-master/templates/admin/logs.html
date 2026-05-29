@@ -1,0 +1,571 @@
+{% extends "admin/base.html" %}
+
+{% block title %}日志管理 - 后台管理系统{% endblock %}
+
+{% block page_title %}日志管理{% endblock %}
+
+{% block content %}
+<!-- Log Type Tabs -->
+<ul class="nav nav-tabs mb-3" id="logTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="operation-tab" data-bs-toggle="tab" data-bs-target="#operation" type="button">
+            <i class="fas fa-history me-2"></i>操作日志
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button">
+            <i class="fas fa-file-alt me-2"></i>系统日志
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">
+            <i class="fas fa-sign-in-alt me-2"></i>登录日志
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="logTabContent">
+    <!-- Operation Logs -->
+    <div class="tab-pane fade show active" id="operation" role="tabpanel">
+        <div class="table-container">
+            <div class="table-header">
+                <div class="d-flex align-items-center gap-3">
+                    <select class="form-select form-select-sm" id="opModuleFilter" style="width: 120px;">
+                        <option value="">全部模块</option>
+                        <option value="auth">认证</option>
+                        <option value="user">用户</option>
+                        <option value="role">角色</option>
+                        <option value="monitor">监控</option>
+                        <option value="threat">威胁</option>
+                        <option value="alert">告警</option>
+                        <option value="defense">防御</option>
+                        <option value="system">系统</option>
+                    </select>
+                    <select class="form-select form-select-sm" id="opActionFilter" style="width: 120px;">
+                        <option value="">全部操作</option>
+                        <option value="login">登录</option>
+                        <option value="create">创建</option>
+                        <option value="update">更新</option>
+                        <option value="delete">删除</option>
+                        <option value="block_ip">封禁IP</option>
+                        <option value="unblock_ip">解封IP</option>
+                        <option value="confirm_alert">确认告警</option>
+                        <option value="resolve_alert">解决告警</option>
+                        <option value="create_policy">创建策略</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm" id="cleanOpLogsBtn">
+                        <i class="fas fa-trash"></i> 清理旧日志
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" id="exportOpLogsBtn">
+                        <i class="fas fa-download"></i> 导出
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>模块</th>
+                            <th>操作</th>
+                            <th>资源</th>
+                            <th>IP地址</th>
+                            <th>状态</th>
+                            <th>时间</th>
+                            <th>详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opLogTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="opTableInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="opPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="tab-pane fade" id="system" role="tabpanel">
+        <div class="table-container">
+            <div class="table-header">
+                <div class="d-flex align-items-center gap-3">
+                    <select class="form-select form-select-sm" id="sysLevelFilter" style="width: 120px;">
+                        <option value="">全部级别</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="WARNING">WARNING</option>
+                        <option value="INFO">INFO</option>
+                        <option value="DEBUG">DEBUG</option>
+                    </select>
+                    <select class="form-select form-select-sm" id="sysModuleFilter" style="width: 120px;">
+                        <option value="">全部模块</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm" id="cleanSysLogsBtn">
+                        <i class="fas fa-trash"></i> 清理旧日志
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>级别</th>
+                            <th>模块</th>
+                            <th>消息</th>
+                            <th>文件</th>
+                            <th>行号</th>
+                            <th>时间</th>
+                            <th>详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sysLogTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="sysTableInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="sysPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Logs -->
+    <div class="tab-pane fade" id="login" role="tabpanel">
+        <div class="table-container">
+            <div class="table-header">
+                <div class="d-flex align-items-center gap-3">
+                    <input type="text" class="form-control form-control-sm" id="loginSearchInput"
+                           placeholder="搜索用户名..." style="width: 200px;">
+                    <select class="form-select form-select-sm" id="loginStatusFilter" style="width: 120px;">
+                        <option value="">全部状态</option>
+                        <option value="success">成功</option>
+                        <option value="failed">失败</option>
+                        <option value="blocked">已阻止</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>IP地址</th>
+                            <th>状态</th>
+                            <th>失败原因</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loginLogTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="loginTableInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="loginPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">日志详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="logDetailContent" class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clean Logs Modal -->
+<div class="modal fade" id="cleanLogsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">清理旧日志</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cleanLogsForm">
+                    <input type="hidden" id="cleanLogType">
+
+                    <div class="mb-3">
+                        <label class="form-label">保留天数</label>
+                        <input type="number" class="form-control" id="cleanDays" value="90" min="1" max="365">
+                        <div class="form-text">将删除指定天数之前的所有日志</div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        此操作不可恢复，请谨慎操作！
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmCleanBtn">确认清理</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let opCurrentPage = 1;
+let sysCurrentPage = 1;
+let loginCurrentPage = 1;
+const perPage = 50;
+
+// Module names mapping
+const moduleNames = {
+    'user': '用户',
+    'role': '角色',
+    'log': '日志',
+    'system': '系统',
+    'monitor': '监控',
+    'threat': '威胁',
+    'alert': '告警',
+    'defense': '防御'
+};
+
+// Load Operation Logs
+async function loadOperationLogs() {
+    try {
+        let url = `/admin/api/logs/operation?page=${opCurrentPage}&per_page=${perPage}`;
+        const module = document.getElementById('opModuleFilter').value;
+        const action = document.getElementById('opActionFilter').value;
+        if (module) url += `&module=${module}`;
+        if (action) url += `&action=${action}`;
+
+        const response = await apiRequest(url);
+
+        if (response && response.success) {
+            const { logs, total } = response.data;
+            renderOpLogTable(logs);
+            renderOpPagination(total);
+            document.getElementById('opTableInfo').textContent = `显示 ${logs.length} / ${total} 条记录`;
+        } else {
+            console.error('API返回失败:', response);
+            document.getElementById('opLogTableBody').innerHTML = '<tr><td colspan=\"9\" class=\"text-center text-danger\">加载失败</td></tr>';
+        }
+
+    } catch (error) {
+        console.error('Failed to load operation logs:', error);
+        document.getElementById('opLogTableBody').innerHTML = '<tr><td colspan=\"9\" class=\"text-center text-danger\">加载失败</td></tr>';
+    }
+}
+
+function renderOpLogTable(logs) {
+    const tbody = document.getElementById('opLogTableBody');
+
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => `
+        <tr>
+            <td>${log.id}</td>
+            <td>${log.username}</td>
+            <td><span class="badge bg-secondary">${moduleNames[log.module] || log.module}</span></td>
+            <td>${log.action}</td>
+            <td>${log.resource || '-'}</td>
+            <td>${log.ip_address || '-'}</td>
+            <td>
+                ${log.status === 'success'
+                    ? '<span class="badge badge-success">成功</span>'
+                    : '<span class="badge badge-danger">失败</span>'
+                }
+            </td>
+            <td>${formatDate(log.created_at)}</td>
+            <td>
+                ${log.details ? `<button class="btn btn-sm btn-link" onclick='showLogDetail(${JSON.stringify(log.details)})'>详情</button>` : '-'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderOpPagination(total) {
+    const totalPages = Math.ceil(total / perPage);
+    const pagination = document.getElementById('opPagination');
+    pagination.innerHTML = generatePaginationHTML(totalPages, opCurrentPage, 'goToOpPage');
+}
+
+function goToOpPage(page) {
+    if (page < 1) return;
+    opCurrentPage = page;
+    loadOperationLogs();
+}
+
+// Load System Logs
+async function loadSystemLogs() {
+    try {
+        let url = `/admin/api/logs/system?page=${sysCurrentPage}&per_page=${perPage}`;
+        const level = document.getElementById('sysLevelFilter').value;
+        const module = document.getElementById('sysModuleFilter').value;
+        if (level) url += `&level=${level}`;
+        if (module) url += `&module=${module}`;
+
+        const response = await apiRequest(url);
+
+        if (response && response.success) {
+            const { logs, total } = response.data;
+            renderSysLogTable(logs);
+            renderSysPagination(total);
+            document.getElementById('sysTableInfo').textContent = `显示 ${logs.length} / ${total} 条记录`;
+        } else {
+            console.error('API返回失败:', response);
+            document.getElementById('sysLogTableBody').innerHTML = '<tr><td colspan=\"7\" class=\"text-center text-danger\">加载失败</td></tr>';
+        }
+
+    } catch (error) {
+        console.error('Failed to load system logs:', error);
+        document.getElementById('sysLogTableBody').innerHTML = '<tr><td colspan=\"7\" class=\"text-center text-danger\">加载失败</td></tr>';
+    }
+}
+
+function renderSysLogTable(logs) {
+    const tbody = document.getElementById('sysLogTableBody');
+
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    const levelBadges = {
+        'ERROR': 'danger',
+        'WARNING': 'warning',
+        'INFO': 'info',
+        'DEBUG': 'secondary',
+        'CRITICAL': 'dark'
+    };
+
+    tbody.innerHTML = logs.map(log => `
+        <tr>
+            <td><span class="badge bg-${levelBadges[log.level] || 'secondary'}">${log.level}</span></td>
+            <td>${log.module}</td>
+            <td class="text-truncate" style="max-width: 300px;">${log.message}</td>
+            <td class="text-truncate" style="max-width: 150px;">${log.file_path || '-'}</td>
+            <td>${log.line_number || '-'}</td>
+            <td>${formatDate(log.created_at)}</td>
+            <td>
+                ${log.details ? `<button class="btn btn-sm btn-link" onclick='showLogDetail(${JSON.stringify(log.details)})'>详情</button>` : '-'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderSysPagination(total) {
+    const totalPages = Math.ceil(total / perPage);
+    const pagination = document.getElementById('sysPagination');
+    pagination.innerHTML = generatePaginationHTML(totalPages, sysCurrentPage, 'goToSysPage');
+}
+
+function goToSysPage(page) {
+    if (page < 1) return;
+    sysCurrentPage = page;
+    loadSystemLogs();
+}
+
+// Load Login Logs
+async function loadLoginLogs() {
+    try {
+        let url = `/admin/api/logs/login?page=${loginCurrentPage}&per_page=${perPage}`;
+        const search = document.getElementById('loginSearchInput').value;
+        const status = document.getElementById('loginStatusFilter').value;
+        if (search) url += `&search=${search}`;
+        if (status) url += `&status=${status}`;
+
+        const response = await apiRequest(url);
+
+        if (response && response.success) {
+            const { logs, total } = response.data;
+            renderLoginLogTable(logs);
+            renderLoginPagination(total);
+            document.getElementById('loginTableInfo').textContent = `显示 ${logs.length} / ${total} 条记录`;
+        } else {
+            console.error('API返回失败:', response);
+            document.getElementById('loginLogTableBody').innerHTML = '<tr><td colspan=\"6\" class=\"text-center text-danger\">加载失败</td></tr>';
+        }
+
+    } catch (error) {
+        console.error('Failed to load login logs:', error);
+        document.getElementById('loginLogTableBody').innerHTML = '<tr><td colspan=\"6\" class=\"text-center text-danger\">加载失败</td></tr>';
+    }
+}
+
+function renderLoginLogTable(logs) {
+    const tbody = document.getElementById('loginLogTableBody');
+
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => `
+        <tr>
+            <td>${log.id}</td>
+            <td><strong>${log.username}</strong></td>
+            <td>${log.ip_address || '-'}</td>
+            <td>
+                ${log.status === 'success'
+                    ? '<span class="badge badge-success">成功</span>'
+                    : log.status === 'failed'
+                    ? '<span class="badge badge-danger">失败</span>'
+                    : '<span class="badge badge-warning">已阻止</span>'
+                }
+            </td>
+            <td>${log.failure_reason || '-'}</td>
+            <td>${formatDate(log.login_time)}</td>
+        </tr>
+    `).join('');
+}
+
+function renderLoginPagination(total) {
+    const totalPages = Math.ceil(total / perPage);
+    const pagination = document.getElementById('loginPagination');
+    pagination.innerHTML = generatePaginationHTML(totalPages, loginCurrentPage, 'goToLoginPage');
+}
+
+function goToLoginPage(page) {
+    if (page < 1) return;
+    loginCurrentPage = page;
+    loadLoginLogs();
+}
+
+// Generate Pagination HTML
+function generatePaginationHTML(totalPages, currentPage, goToFunction) {
+    if (totalPages <= 1) return '';
+
+    let html = '';
+
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="${goToFunction}(${currentPage - 1})">上一页</a>
+    </li>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="${goToFunction}(${i})">${i}</a>
+            </li>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="${goToFunction}(${currentPage + 1})">下一页</a>
+    </li>`;
+
+    return html;
+}
+
+// Show Log Detail
+function showLogDetail(details) {
+    document.getElementById('logDetailContent').textContent = JSON.stringify(details, null, 2);
+    new bootstrap.Modal(document.getElementById('logDetailModal')).show();
+}
+
+// Event Listeners
+document.getElementById('opModuleFilter').addEventListener('change', () => { opCurrentPage = 1; loadOperationLogs(); });
+document.getElementById('opActionFilter').addEventListener('change', () => { opCurrentPage = 1; loadOperationLogs(); });
+document.getElementById('sysLevelFilter').addEventListener('change', () => { sysCurrentPage = 1; loadSystemLogs(); });
+document.getElementById('sysModuleFilter').addEventListener('change', () => { sysCurrentPage = 1; loadSystemLogs(); });
+document.getElementById('loginSearchInput').addEventListener('input', () => { loginCurrentPage = 1; loadLoginLogs(); });
+document.getElementById('loginStatusFilter').addEventListener('change', () => { loginCurrentPage = 1; loadLoginLogs(); });
+
+// Clean Logs
+document.getElementById('cleanOpLogsBtn').addEventListener('click', () => {
+    document.getElementById('cleanLogType').value = 'operation';
+    new bootstrap.Modal(document.getElementById('cleanLogsModal')).show();
+});
+
+document.getElementById('cleanSysLogsBtn').addEventListener('click', () => {
+    document.getElementById('cleanLogType').value = 'system';
+    new bootstrap.Modal(document.getElementById('cleanLogsModal')).show();
+});
+
+document.getElementById('confirmCleanBtn').addEventListener('click', async () => {
+    const logType = document.getElementById('cleanLogType').value;
+    const days = parseInt(document.getElementById('cleanDays').value);
+
+    try {
+        const response = await apiRequest('/admin/api/logs/delete_old', {
+            method: 'POST',
+            body: JSON.stringify({ log_type: logType, days })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('cleanLogsModal')).hide();
+        Swal.fire('清理完成', `已删除 ${response.count} 条日志`, 'success');
+
+        if (logType === 'operation') {
+            loadOperationLogs();
+        } else {
+            loadSystemLogs();
+        }
+
+    } catch (error) {
+        console.error('Failed to clean logs:', error);
+    }
+});
+
+// Tab Change Event
+document.querySelectorAll('#logTabs button').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', event => {
+        if (event.target.id === 'operation-tab') {
+            loadOperationLogs();
+        } else if (event.target.id === 'system-tab') {
+            loadSystemLogs();
+        } else if (event.target.id === 'login-tab') {
+            loadLoginLogs();
+        }
+    });
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadOperationLogs();
+});
+</script>
+{% endblock %}

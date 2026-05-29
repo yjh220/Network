@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络监控 - 实时监控</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #1e3c72;
+            font-size: 28px;
+        }
+        .clock {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .table-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th {
+            background: #1e3c72;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 500;
+        }
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .loading-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        .timestamp {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-top">
+                <h1>🌐 网络实时监控</h1>
+                <div class="clock" id="clock">--:--:--</div>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot"></span>
+                    <span>系统运行中</span>
+                </div>
+                <div id="loadingStatus">
+                    <span>⏳ 首次加载中...</span>
+                </div>
+                <div id="updateInfo" style="display:none;">
+                    <span>📡 已自动刷新 <span id="refreshCount">0</span> 次</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容 -->
+        <div class="main-content">
+            <!-- 表格区域 -->
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>源IP地址</th>
+                            <th>源端口</th>
+                            <th>目标IP地址</th>
+                            <th>目标端口</th>
+                            <th>协议</th>
+                            <th>长度</th>
+                        </tr>
+                    </thead>
+                    <tbody id="packetTableBody">
+                        <tr class="loading">
+                            <td colspan="7">
+                                <div class="loading-icon">⏳</div>
+                                <div>正在加载网络数据...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 统计区域 -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="packetCount">0</div>
+                    <div class="stat-label">数据包总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="connectionCount">0</div>
+                    <div class="stat-label">活跃连接</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="protocolCount">0</div>
+                    <div class="stat-label">协议类型</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="refreshRate">1s</div>
+                    <div class="stat-label">刷新频率</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let packetCount = 0;
+        let refreshCount = 0;
+        let protocols = new Set();
+        let connections = new Set();
+        let isFirstLoad = true;
+
+        // 更新时钟
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('clock').textContent = timeStr;
+        }
+
+        // 格式化数据包时间 - 处理多种时间格式
+        function formatPacketTime(timeStr) {
+            if (!timeStr) return '-';
+
+            try {
+                const now = new Date();
+
+                // 检查是否是 HH:MM:SS 格式
+                if (/^\d{1,2}:\d{2}:\d{2}$/.test(timeStr)) {
+                    const parts = timeStr.split(':');
+                    const hours = parseInt(parts[0]);
+                    const minutes = parseInt(parts[1]);
+                    const seconds = parseInt(parts[2]);
+                    const packetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                                                     hours, minutes, seconds);
+                    return packetDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                }
+
+                // 尝试解析ISO格式时间戳
+                const packetDate = new Date(timeStr);
+                if (!isNaN(packetDate.getTime())) {
+                    return packetDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                }
+            } catch (e) {
+                console.error('[错误] 时间解析失败:', e, timeStr);
+            }
+
+            // 如果解析失败，返回原始字符串
+            return timeStr;
+        }
+
+        // 显示数据包
+        function displayPackets(packets) {
+            const tbody = document.getElementById('packetTableBody');
+
+            console.log('[显示] 准备显示', packets.length, '条数据包');
+
+            // 如果是首次加载，清空表格
+            if (isFirstLoad) {
+                tbody.innerHTML = '';
+                isFirstLoad = false;
+            } else {
+                // 移除旧的行（保留最近50条）
+                while (tbody.children.length > 50) {
+                    tbody.removeChild(tbody.lastChild);
+                }
+            }
+
+            // 添加新数据包（添加到顶部）
+            packets.forEach(packet => {
+                const row = document.createElement('tr');
+                const timeStr = formatPacketTime(packet.timestamp);
+
+                row.innerHTML = `
+                    <td class="timestamp">${timeStr}</td>
+                    <td>${packet.src_ip || '-'}</td>
+                    <td style="text-align:center;">${packet.src_port || 0}</td>
+                    <td>${packet.dst_ip || '-'}</td>
+                    <td style="text-align:center;">${packet.dst_port || 0}</td>
+                    <td style="text-align:center;">${packet.protocol || '-'}</td>
+                    <td style="text-align:right;">${packet.length || packet.size || 0}</td>
+                `;
+
+                // 鼠标悬停效果
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#e3f2fd';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+
+                tbody.prepend(row);
+            });
+
+            console.log('[显示] 已添加', packets.length, '行到表格');
+        }
+
+        // 更新统计
+        function updateStats(packets) {
+            // 更新数据包计数
+            packetCount += packets.length;
+            document.getElementById('packetCount').textContent = packetCount;
+
+            // 统计协议和连接
+            packets.forEach(p => {
+                protocols.add(p.protocol);
+                connections.add(p.src_ip);
+                connections.add(p.dst_ip);
+            });
+
+            document.getElementById('protocolCount').textContent = protocols.size;
+            document.getElementById('connectionCount').textContent = connections.size;
+            document.getElementById('refreshCount').textContent = refreshCount;
+
+            console.log('[统计] 包数:', packetCount, '协议:', protocols.size, '连接:', connections.size);
+        }
+
+        // 加载数据
+        async function loadNetworkData() {
+            const updateInfo = document.getElementById('updateInfo');
+            const loadingStatus = document.getElementById('loadingStatus');
+
+            try {
+                console.log('[fetch] 开始请求 /api/packets');
+
+                // 添加缓存破坏参数
+                const response = await fetch('/api/packets?t=' + Date.now());
+
+                console.log('[fetch] 响应状态:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const data = await response.json();
+
+                console.log('[fetch] 收到数据类型:', typeof data, '是否数组:', Array.isArray(data));
+
+                if (Array.isArray(data)) {
+                    console.log('[fetch] 数组长度:', data.length);
+                    if (data.length > 0) {
+                        console.log('[fetch] 第一条数据示例:', data[0]);
+                    }
+                }
+
+                if (Array.isArray(data) && data.length > 0) {
+                    displayPackets(data);
+                    updateStats(data);
+
+                    // 隐藏加载状态，显示更新信息
+                    loadingStatus.style.display = 'none';
+                    updateInfo.style.display = 'block';
+                    refreshCount++;
+                    console.log('[成功] 刷新', refreshCount, '完成，显示', data.length, '条数据');
+                } else {
+                    console.warn('[警告] 返回数据为空或格式不正确');
+                }
+
+            } catch (error) {
+                console.error('[错误] 加载失败:', error);
+                document.getElementById('packetTableBody').innerHTML = `
+                    <tr class="error">
+                        <td colspan="7">
+                            <div style="font-size: 40px; margin-bottom: 15px;">❌</div>
+                            <div>加载失败: ${error.message}</div>
+                            <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                                请检查服务是否运行
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // 初始化
+        console.log('[初始化] 页面加载完成，开始初始化');
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // 首次加载
+        console.log('[初始化] 开始首次数据加载');
+        loadNetworkData();
+
+        // 定时刷新（每1秒）
+        setInterval(loadNetworkData, 1000);
+        console.log('[初始化] 定时器已设置，每1秒刷新一次');
+    </script>
+</body>
+</html>

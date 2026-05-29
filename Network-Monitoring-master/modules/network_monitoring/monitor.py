@@ -150,6 +150,9 @@ class NetworkMonitor:
             self.ip_data[ip]['in_traffic'] += random.randint(1, 100)
             self.ip_data[ip]['out_traffic'] += random.randint(1, 50)
             self.ip_data[ip]['last_seen'] = timestamp
+
+        # 生成并发送网络包数据（用于前端显示）
+        self._generate_and_emit_packets(timestamp)
     
     def _emit_monitoring_data(self):
         """向前端发送监控数据"""
@@ -230,7 +233,57 @@ class NetworkMonitor:
             logger.info(f"已保存监控数据到 {filename}")
         except Exception as e:
             logger.error(f"保存监控数据失败: {str(e)}")
-    
+
+    def _generate_and_emit_packets(self, timestamp):
+        """生成并发送网络包数据到前端"""
+        try:
+            if not self.socketio:
+                return
+
+            # 生成1-3个随机网络包
+            num_packets = random.randint(1, 3)
+            packets = []
+
+            for _ in range(num_packets):
+                protocol = random.choice(['TCP', 'UDP', 'HTTP', 'HTTPS', 'ICMP', 'DNS'])
+
+                # 根据协议生成合理的端口
+                if protocol in ['ICMP']:
+                    src_port = 0
+                    dst_port = 0
+                elif protocol == 'DNS':
+                    src_port = random.randint(1024, 65535)
+                    dst_port = 53
+                elif protocol == 'HTTP':
+                    src_port = random.randint(1024, 65535)
+                    dst_port = 80
+                elif protocol == 'HTTPS':
+                    src_port = random.randint(1024, 65535)
+                    dst_port = 443
+                else:
+                    src_port = random.randint(1024, 65535)
+                    dst_port = random.randint(1, 65535)
+
+                packet = {
+                    'timestamp': timestamp,
+                    'src_ip': f"192.168.1.{random.randint(2, 254)}",
+                    'dst_ip': f"10.0.0.{random.randint(2, 254)}",
+                    'src_port': src_port,
+                    'dst_port': dst_port,
+                    'protocol': protocol,
+                    'length': random.randint(64, 1514),
+                    'flags': random.choice(['SYN', 'ACK', 'FIN', 'PSH', 'RST', '']) if protocol in ['TCP', 'UDP'] else '',
+                    'info': f"{protocol} 数据包"
+                }
+                packets.append(packet)
+
+            # 发送网络包数据到前端
+            if packets:
+                self.socketio.emit('network_packets', {'packets': packets})
+
+        except Exception as e:
+            logger.error(f"生成网络包数据错误: {str(e)}")
+
     def get_network_stats(self):
         """获取网络统计信息"""
         return {

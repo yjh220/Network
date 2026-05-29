@@ -1,0 +1,14 @@
+[
+  {
+    "alert_id": "ALERT-1777126071-4966",
+    "timestamp": "2026-04-25T22:07:51.194094",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.160",
+    "dst_ip": "10.0.0.9",
+    "port": 43378,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

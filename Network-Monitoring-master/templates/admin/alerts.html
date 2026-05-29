@@ -1,0 +1,691 @@
+{% extends "admin/base.html" %}
+
+{% block title %}告警管理 - 后台管理系统{% endblock %}
+
+{% block page_title %}告警管理{% endblock %}
+
+{% block content %}
+<!-- Alert Management Tabs -->
+<ul class="nav nav-tabs mb-3" id="alertTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="records-tab" data-bs-toggle="tab" data-bs-target="#alert_records" type="button">
+            <i class="fas fa-bell me-2"></i>告警记录
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#alert_rules" type="button">
+            <i class="fas fa-cog me-2"></i>告警规则
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="recipients-tab" data-bs-toggle="tab" data-bs-target="#recipients" type="button">
+            <i class="fas fa-users me-2"></i>通知设置
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="alertTabContent">
+
+    <!-- Alert Records -->
+    <div class="tab-pane fade show active" id="alert_records" role="tabpanel">
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="label">今日告警</div>
+                            <div class="value" id="todayAlerts">0</div>
+                        </div>
+                        <div class="icon warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="label">待处理</div>
+                            <div class="value" id="pendingAlerts">0</div>
+                        </div>
+                        <div class="icon danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="label">已确认</div>
+                            <div class="value" id="confirmedAlerts">0</div>
+                        </div>
+                        <div class="icon success">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="label">已解决</div>
+                            <div class="value" id="resolvedAlerts">0</div>
+                        </div>
+                        <div class="icon primary">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="d-flex gap-2 mb-3">
+            <select class="form-select form-select-sm" id="alertSeverityFilter" style="width: 120px;">
+                <option value="">全部等级</option>
+                <option value="critical">严重</option>
+                <option value="high">高危</option>
+                <option value="medium">中危</option>
+                <option value="low">低危</option>
+            </select>
+            <select class="form-select form-select-sm" id="alertStatusFilter" style="width: 120px;">
+                <option value="">全部状态</option>
+                <option value="pending">待处理</option>
+                <option value="confirmed">已确认</option>
+                <option value="resolved">已解决</option>
+                <option value="ignored">已忽略</option>
+            </select>
+        </div>
+
+        <!-- Alert Records Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>时间</th>
+                                <th>规则名称</th>
+                                <th>级别</th>
+                                <th>消息</th>
+                                <th>状态</th>
+                                <th>确认人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertRecordsTable">
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="alertRecordsInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="alertRecordsPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Rules -->
+    <div class="tab-pane fade" id="alert_rules" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-outline-secondary btn-sm" id="initAlertRulesBtn">
+                <i class="fas fa-sync me-2"></i>初始化规则
+            </button>
+            <button class="btn btn-primary btn-sm" id="addAlertRuleBtn">
+                <i class="fas fa-plus me-2"></i>添加规则
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>规则名称</th>
+                            <th>监控指标</th>
+                            <th>条件</th>
+                            <th>阈值</th>
+                            <th>级别</th>
+                            <th>静默(分钟)</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertRulesTable">
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Recipients -->
+    <div class="tab-pane fade" id="recipients" role="tabpanel">
+        <div class="d-flex justify-content-end align-items-center mb-3">
+            <button class="btn btn-primary btn-sm" id="addRecipientBtn">
+                <i class="fas fa-plus me-2"></i>添加接收人
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>姓名</th>
+                            <th>邮箱</th>
+                            <th>钉钉</th>
+                            <th>企业微信</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recipientsTable">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add Alert Rule Modal -->
+<div class="modal fade" id="alertRuleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加告警规则</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="alertRuleForm">
+                    <div class="mb-3">
+                        <label class="form-label">规则名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="alertRuleName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">监控指标 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="alertMetric" required>
+                            <option value="">请选择</option>
+                            <option value="traffic">流量</option>
+                            <option value="threat_count">威胁数量</option>
+                            <option value="cpu_usage">CPU使用率</option>
+                            <option value="memory_usage">内存使用率</option>
+                            <option value="disk_usage">磁盘使用率</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label class="form-label">条件 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="alertCondition" required>
+                                    <option value=">">请选择</option>
+                                    <option value=">">大于</option>
+                                    <option value="<">小于</option>
+                                    <option value=">=">大于等于</option>
+                                    <option value="<=">小于等于</option>
+                                    <option value="=">等于</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label class="form-label">阈值 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="alertThreshold" required step="any">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">严重程度 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="alertSeverity" required>
+                            <option value="low">低危</option>
+                            <option value="medium" selected>中危</option>
+                            <option value="high">高危</option>
+                            <option value="critical">严重</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">静默时长（分钟）</label>
+                        <input type="number" class="form-control" id="alertSilence" value="0" min="0">
+                        <div class="form-text">相同告警在此时间内只发送一次</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveAlertRuleBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Recipient Modal -->
+<div class="modal fade" id="recipientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加告警接收人</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="recipientForm">
+                    <div class="mb-3">
+                        <label class="form-label">姓名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="recipientName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-control" id="recipientEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">钉钉Webhook</label>
+                        <input type="url" class="form-control" id="recipientDingtalk" placeholder="https://oapi.dingtalk.com/robot/send?access_token=">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">企业微信Webhook</label>
+                        <input type="url" class="form-control" id="recipientWechat" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveRecipientBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentAlertPage = 1;
+const perPage = 50;
+
+// Load Alert Records
+async function loadAlertRecords() {
+    try {
+        // 首先加载统计信息
+        try {
+            const statsResponse = await apiRequest('/admin/api/alert/stats');
+            const stats = statsResponse.data;
+
+            document.getElementById('todayAlerts').textContent = stats.today_alerts || 0;
+            document.getElementById('pendingAlerts').textContent = stats.pending || 0;
+            document.getElementById('confirmedAlerts').textContent = stats.confirmed || 0;
+            document.getElementById('resolvedAlerts').textContent = stats.resolved || 0;
+        } catch (statsError) {
+            console.error('Failed to load alert stats:', statsError);
+        }
+
+        // 加载告警记录列表
+        let url = `/admin/api/alert/records?page=${currentAlertPage}&per_page=${perPage}`;
+        const severity = document.getElementById('alertSeverityFilter').value;
+        const status = document.getElementById('alertStatusFilter').value;
+
+        if (severity) url += `&severity=${severity}`;
+        if (status) url += `&status=${status}`;
+
+        const response = await apiRequest(url);
+        const { records, total } = response.data;
+
+        const tbody = document.getElementById('alertRecordsTable');
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无告警记录</td></tr>';
+            document.getElementById('alertRecordsPagination').innerHTML = '';
+            return;
+        }
+
+        tbody.innerHTML = records.map(alert => `
+            <tr>
+                <td>${formatDate(alert.created_at)}</td>
+                <td><strong>${alert.rule_name || 'N/A'}</strong></td>
+                <td>
+                    ${alert.severity === 'critical' ? '<span class="badge badge-danger">严重</span>' :
+                      alert.severity === 'high' ? '<span class="badge badge-danger">高危</span>' :
+                      alert.severity === 'medium' ? '<span class="badge badge-warning">中危</span>' :
+                      '<span class="badge badge-info">低危</span>'}
+                </td>
+                <td>${alert.message}</td>
+                <td>
+                    ${alert.status === 'pending' ? '<span class="badge badge-warning">待处理</span>' :
+                      alert.status === 'confirmed' ? '<span class="badge badge-info">已确认</span>' :
+                      alert.status === 'resolved' ? '<span class="badge badge-success">已解决</span>' :
+                      '<span class="badge badge-secondary">已忽略</span>'}
+                </td>
+                <td>${alert.confirmed_by || '-'}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        ${alert.status === 'pending' ? `
+                            <button class="btn btn-outline-info" onclick="confirmAlert(${alert.id})" title="确认">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-outline-success" onclick="resolveAlert(${alert.id})" title="解决">
+                                <i class="fas fa-check-double"></i>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline-secondary" onclick="ignoreAlert(${alert.id})" title="忽略">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        renderPagination('alertRecordsPagination', total, currentAlertPage, 'goToAlertPage');
+        document.getElementById('alertRecordsInfo').textContent = `显示 ${records.length} / ${total} 条记录`;
+
+    } catch (error) {
+        console.error('Failed to load alert records:', error);
+    }
+}
+
+function goToAlertPage(page) {
+    currentAlertPage = page;
+    loadAlertRecords();
+}
+
+async function confirmAlert(alertId) {
+    try {
+        await apiRequest(`/admin/api/alert/records/${alertId}/confirm`, {
+            method: 'POST'
+        });
+        showToast('告警已确认');
+        loadAlertRecords();
+    } catch (error) {
+        console.error('Failed to confirm alert:', error);
+    }
+}
+
+async function resolveAlert(alertId) {
+    try {
+        await apiRequest(`/admin/api/alert/records/${alertId}/resolve`, {
+            method: 'POST'
+        });
+        showToast('告警已解决');
+        loadAlertRecords();
+    } catch (error) {
+        console.error('Failed to resolve alert:', error);
+    }
+}
+
+async function ignoreAlert(alertId) {
+    try {
+        await apiRequest(`/admin/api/alert/records/${alertId}/ignore`, {
+            method: 'POST'
+        });
+        showToast('告警已忽略');
+        loadAlertRecords();
+    } catch (error) {
+        console.error('Failed to ignore alert:', error);
+    }
+}
+
+// Load Alert Rules
+async function loadAlertRules() {
+    try {
+        const response = await apiRequest('/admin/api/alert/rules');
+        const rules = response.data;
+
+        const tbody = document.getElementById('alertRulesTable');
+
+        if (rules.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">暂无告警规则</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = rules.map(rule => `
+            <tr>
+                <td><strong>${rule.name}</strong></td>
+                <td><span class="badge bg-info">${rule.metric}</span></td>
+                <td>${rule.condition}</td>
+                <td>${rule.threshold}</td>
+                <td>
+                    ${rule.severity === 'critical' ? '<span class="badge badge-danger">严重</span>' :
+                      rule.severity === 'high' ? '<span class="badge badge-danger">高危</span>' :
+                      rule.severity === 'medium' ? '<span class="badge badge-warning">中危</span>' :
+                      '<span class="badge badge-info">低危</span>'}
+                </td>
+                <td>${rule.silence_duration || 0}</td>
+                <td>
+                    ${rule.is_enabled
+                        ? '<span class="badge badge-success">启用</span>'
+                        : '<span class="badge badge-secondary">禁用</span>'
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAlertRule(${rule.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load alert rules:', error);
+    }
+}
+
+// Load Recipients
+async function loadRecipients() {
+    try {
+        const response = await apiRequest('/admin/api/alert/recipients');
+        const recipients = response.data;
+
+        const tbody = document.getElementById('recipientsTable');
+
+        if (recipients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无接收人</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = recipients.map(recipient => `
+            <tr>
+                <td><strong>${recipient.name}</strong></td>
+                <td>${recipient.email || '-'}</td>
+                <td>${recipient.dingtalk_webhook ? '<span class="badge badge-success">已配置</span>' : '-'}</td>
+                <td>${recipient.wechat_webhook ? '<span class="badge badge-success">已配置</span>' : '-'}</td>
+                <td>
+                    ${recipient.is_enabled
+                        ? '<span class="badge badge-success">启用</span>'
+                        : '<span class="badge badge-secondary">禁用</span>'
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteRecipient(${recipient.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load recipients:', error);
+    }
+}
+
+// Add Alert Rule
+document.getElementById('addAlertRuleBtn').addEventListener('click', function() {
+    document.getElementById('alertRuleForm').reset();
+    new bootstrap.Modal(document.getElementById('alertRuleModal')).show();
+});
+
+document.getElementById('saveAlertRuleBtn').addEventListener('click', async function() {
+    const name = document.getElementById('alertRuleName').value;
+    const metric = document.getElementById('alertMetric').value;
+    const condition = document.getElementById('alertCondition').value;
+    const threshold = document.getElementById('alertThreshold').value;
+    const severity = document.getElementById('alertSeverity').value;
+    const silence_duration = document.getElementById('alertSilence').value;
+
+    if (!name || !metric || !condition || !threshold || !severity) {
+        Swal.fire('提示', '请填写所有必填项', 'warning');
+        return;
+    }
+
+    try {
+        await apiRequest('/admin/api/alert/rules', {
+            method: 'POST',
+            body: JSON.stringify({
+                name, metric, condition, threshold, severity, silence_duration
+            })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('alertRuleModal')).hide();
+        showToast('告警规则创建成功');
+        loadAlertRules();
+
+    } catch (error) {
+        console.error('Failed to create alert rule:', error);
+    }
+});
+
+function deleteAlertRule(ruleId) {
+    Swal.fire({
+        title: '确认删除',
+        text: '确定要删除此告警规则吗？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await apiRequest(`/admin/api/alert/rules/${ruleId}`, {
+                    method: 'DELETE'
+                });
+                showToast('告警规则删除成功');
+                loadAlertRules();
+            } catch (error) {
+                console.error('Failed to delete alert rule:', error);
+            }
+        }
+    });
+}
+
+// Add Recipient
+document.getElementById('addRecipientBtn').addEventListener('click', function() {
+    document.getElementById('recipientForm').reset();
+    new bootstrap.Modal(document.getElementById('recipientModal')).show();
+});
+
+document.getElementById('saveRecipientBtn').addEventListener('click', async function() {
+    const name = document.getElementById('recipientName').value;
+    const email = document.getElementById('recipientEmail').value;
+    const dingtalk = document.getElementById('recipientDingtalk').value;
+    const wechat = document.getElementById('recipientWechat').value;
+
+    if (!name) {
+        Swal.fire('提示', '请输入姓名', 'warning');
+        return;
+    }
+
+    try {
+        await apiRequest('/admin/api/alert/recipients', {
+            method: 'POST',
+            body: JSON.stringify({
+                name, email, dingtalk_webhook: dingtalk, wechat_webhook: wechat
+            })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('recipientModal')).hide();
+        showToast('接收人添加成功');
+        loadRecipients();
+
+    } catch (error) {
+        console.error('Failed to add recipient:', error);
+    }
+});
+
+function deleteRecipient(recipientId) {
+    Swal.fire({
+        title: '确认删除',
+        text: '确定要删除此接收人吗？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await apiRequest(`/admin/api/alert/recipients/${recipientId}`, {
+                    method: 'DELETE'
+                });
+                showToast('接收人删除成功');
+                loadRecipients();
+            } catch (error) {
+                console.error('Failed to delete recipient:', error);
+            }
+        }
+    });
+}
+
+// Initialize
+document.getElementById('initAlertRulesBtn').addEventListener('click', async function() {
+    try {
+        await apiRequest('/admin/api/alert/init', {
+            method: 'POST'
+        });
+        showToast('告警规则初始化成功');
+        loadAlertRules();
+    } catch (error) {
+        console.error('Failed to initialize alert rules:', error);
+    }
+});
+
+// Filter handlers
+document.getElementById('alertSeverityFilter').addEventListener('change', () => {
+    currentAlertPage = 1;
+    loadAlertRecords();
+});
+
+document.getElementById('alertStatusFilter').addEventListener('change', () => {
+    currentAlertPage = 1;
+    loadAlertRecords();
+});
+
+// Tab change handlers
+document.querySelectorAll('#alertTabs button').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', event => {
+        if (event.target.id === 'records-tab') {
+            loadAlertRecords();
+        } else if (event.target.id === 'rules-tab') {
+            loadAlertRules();
+        } else if (event.target.id === 'recipients-tab') {
+            loadRecipients();
+        }
+    });
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadAlertRecords();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+[
+  {
+    "alert_id": "ALERT-1776775854-1915",
+    "timestamp": "2026-04-21T20:50:54.945123",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.167",
+    "dst_ip": "10.0.0.29",
+    "port": 61596,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1776775869-6647",
+    "timestamp": "2026-04-21T20:51:09.983369",
+    "alert_type": "DDoS\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.92",
+    "dst_ip": "10.0.0.220",
+    "port": 54904,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

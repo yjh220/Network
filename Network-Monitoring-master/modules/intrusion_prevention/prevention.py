@@ -13,6 +13,19 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
+# 全局变量，用于存储Flask app和数据库引用
+_sync_app = None
+_sync_db = None
+
+def init_with_app(app):
+    """初始化时传入Flask app，用于数据库同步"""
+    global _sync_app, _sync_db
+    _sync_app = app
+    # 在app_context中获取db
+    with app.app_context():
+        from models_admin import db
+        _sync_db = db
+
 class IntrusionPrevention:
     def __init__(self, mode='auto'):
         self.is_running = False
@@ -127,23 +140,53 @@ class IntrusionPrevention:
         """阻止指定的IP地址"""
         if ip_address in self.blocked_ips:
             return False
-        
+
         try:
             # 记录阻止操作
             self.blocked_ips.add(ip_address)
-            
-            # 实际环境中，这里应该调用系统防火墙命令阻止IP
-            if os.name == 'posix':  # Linux/Mac系统
-                # 这里仅为示例，实际使用时应确保命令安全
-                # subprocess.run(['iptables', '-A', 'INPUT', '-s', ip_address, '-j', 'DROP'])
-                pass
-            elif os.name == 'nt':  # Windows系统
-                # subprocess.run(['netsh', 'advfirewall', 'firewall', 'add', 'rule', 
-                #                 'name=IDS_Block', 'dir=in', 'action=block', f'remoteip={ip_address}'])
-                pass
-            
+
+            # 同步到数据库
+            if _sync_db:
+                try:
+                    from models_admin import BlockedIP
+
+                    # 确定威胁类型
+                    threat_type = 'auto_block'
+                    reason = '入侵防御自动封禁'
+
+                    # 尝试从威胁列表中找到对应的威胁类型
+                    if threat_id:
+                        for threat in self.threats:
+                            if threat.get('threat_id') == threat_id:
+                                threat_type = threat.get('threat_type', 'auto_block')
+                                reason = f"检测到{threat_type}攻击"
+                                break
+
+                    # 检查是否已存在
+                    existing = _sync_db.session.query(BlockedIP).filter_by(ip_address=ip_address).first()
+                    if not existing:
+                        blocked = BlockedIP(
+                            ip_address=ip_address,
+                            reason=reason,
+                            threat_type=threat_type,
+                            source='system',
+                            blocked_at=datetime.utcnow()
+                        )
+                        _sync_db.session.add(blocked)
+                        _sync_db.session.commit()
+                        logger.info(f"IP封禁已同步到数据库: {ip_address}")
+                    elif not existing.is_active:
+                        existing.is_active = True
+                        existing.blocked_at = datetime.utcnow()
+                        _sync_db.session.commit()
+                        logger.info(f"IP封禁已更新到数据库: {ip_address}")
+                except Exception as e:
+                    logger.error(f"同步IP封禁到数据库失败: {str(e)}")
+                    if _sync_db:
+                        _sync_db.session.rollback()
+
             logger.info(f"已阻止IP地址: {ip_address}")
-            
+
             # 记录阻止事件
             block_event = {
                 'ip': ip_address,
@@ -152,29 +195,29 @@ class IntrusionPrevention:
                 'duration': self.block_duration,
                 'expiry': datetime.now().timestamp() + self.block_duration * 60
             }
-            
+
             # 保存阻止事件
             try:
                 blocks_file = 'data/threats/blocked_ips.json'
                 blocks = []
-                
+
                 if os.path.exists(blocks_file):
                     with open(blocks_file, 'r') as f:
                         try:
                             blocks = json.load(f)
                         except json.JSONDecodeError:
                             blocks = []
-                
+
                 blocks.append(block_event)
-                
+
                 with open(blocks_file, 'w') as f:
                     json.dump(blocks, f, indent=2)
-            
+
             except Exception as e:
                 logger.error(f"保存IP阻止记录失败: {str(e)}")
-            
+
             return True
-        
+
         except Exception as e:
             logger.error(f"阻止IP地址失败: {str(e)}")
             return False
@@ -183,23 +226,29 @@ class IntrusionPrevention:
         """解除对IP地址的阻止"""
         if ip_address not in self.blocked_ips:
             return False
-        
+
         try:
             # 从阻止集合中移除
             self.blocked_ips.remove(ip_address)
-            
-            # 实际环境中，这里应该调用系统防火墙命令解除阻止
-            if os.name == 'posix':  # Linux/Mac系统
-                # subprocess.run(['iptables', '-D', 'INPUT', '-s', ip_address, '-j', 'DROP'])
-                pass
-            elif os.name == 'nt':  # Windows系统
-                # subprocess.run(['netsh', 'advfirewall', 'firewall', 'delete', 'rule', 
-                #                 'name=IDS_Block', f'remoteip={ip_address}'])
-                pass
-            
+
+            # 同步到数据库
+            if _sync_db:
+                try:
+                    from models_admin import BlockedIP
+
+                    existing = _sync_db.session.query(BlockedIP).filter_by(ip_address=ip_address).first()
+                    if existing and existing.is_active:
+                        existing.is_active = False
+                        _sync_db.session.commit()
+                        logger.info(f"IP解封已同步到数据库: {ip_address}")
+                except Exception as e:
+                    logger.error(f"同步IP解封到数据库失败: {str(e)}")
+                    if _sync_db:
+                        _sync_db.session.rollback()
+
             logger.info(f"已解除对IP地址的阻止: {ip_address}")
             return True
-        
+
         except Exception as e:
             logger.error(f"解除IP地址阻止失败: {str(e)}")
             return False

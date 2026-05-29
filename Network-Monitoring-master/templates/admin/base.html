@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}后台管理系统{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #fff;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            overflow-y: auto;
+            height: calc(100vh - var(--header-height));
+        }
+
+        .menu-section {
+            margin-bottom: 10px;
+        }
+
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            padding: 10px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .menu-item.active {
+            background-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            border-left: 3px solid #60a5fa;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .top-header {
+            height: var(--header-height);
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .page-content {
+            padding: 30px;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-card .icon.primary { background: #dbeafe; color: #3b82f6; }
+        .stat-card .icon.success { background: #d1fae5; color: #10b981; }
+        .stat-card .icon.warning { background: #fef3c7; color: #f59e0b; }
+        .stat-card .icon.danger { background: #fee2e2; color: #ef4444; }
+
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .stat-card .label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        /* Tables */
+        .table-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Badges */
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        /* Buttons */
+        .btn-primary {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .spinner-overlay.show {
+            display: flex;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            color: #3b82f6;
+            border-color: #e5e7eb;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        /* Modal */
+        .modal-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* Forms */
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="/admin/console" class="sidebar-brand">
+                <i class="fas fa-shield-alt me-2"></i>IDS Admin
+            </a>
+        </div>
+
+        <div class="sidebar-menu">
+            <!-- 系统管理 -->
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/admin/console" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>控制台
+                </a>
+                <a href="/settings" class="menu-item">
+                    <i class="fas fa-cog"></i>系统设置
+                </a>
+            </div>
+
+            <!-- 用户管理 -->
+            <div class="menu-section">
+                <div class="menu-section-title">用户管理</div>
+                <a href="/admin/users" class="menu-item">
+                    <i class="fas fa-users"></i>用户列表
+                </a>
+                <a href="/admin/roles" class="menu-item">
+                    <i class="fas fa-user-shield"></i>角色权限
+                </a>
+            </div>
+
+            <!-- 安全管理 -->
+            <div class="menu-section">
+                <div class="menu-section-title">安全管理</div>
+                <a href="/admin/monitor" class="menu-item">
+                    <i class="fas fa-desktop"></i>监控管理
+                </a>
+                <a href="/admin/threats" class="menu-item">
+                    <i class="fas fa-virus-slash"></i>威胁检测
+                </a>
+                <a href="/admin/alerts" class="menu-item">
+                    <i class="fas fa-bell"></i>告警管理
+                </a>
+                <a href="/admin/defense" class="menu-item">
+                    <i class="fas fa-shield-alt"></i>防御管理
+                </a>
+            </div>
+
+            <!-- 意图网络 -->
+            <div class="menu-section">
+                <div class="menu-section-title">意图网络</div>
+                <a href="/admin/intent" class="menu-item">
+                    <i class="fas fa-brain"></i>意图控制
+                </a>
+            </div>
+
+            <!-- 日志审计 -->
+            <div class="menu-section">
+                <div class="menu-section-title">日志审计</div>
+                <a href="/logs" class="menu-item">
+                    <i class="fas fa-file-alt"></i>日志管理
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div>
+                <button class="btn btn-link d-md-none" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="mb-0 d-inline-block">{% block page_title %}控制台{% endblock %}</h5>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ current_user.username if current_user else 'Admin' }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">{{ current_user.email if current_user and current_user.email else 'admin@network.local' }}</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-home me-2"></i>前台页面</a></li>
+                        <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-overlay">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Common JS -->
+    <script>
+        // Sidebar Toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+            });
+        }
+
+        // Common AJAX Function - supports both async/await and callback patterns
+        async function apiRequest(url, methodOrData = 'GET', dataOrCallback = null, callback = null) {
+            let method = 'GET';
+            let data = null;
+            let body = null;
+
+            // Support multiple calling patterns:
+            // apiRequest(url) - GET request
+            // apiRequest(url, method, data, callback) - Full params
+            // apiRequest(url, method, callback) - Method with callback, no data
+            // apiRequest(url, data, callback) - POST with callback
+            // await apiRequest(url) - Async/await GET
+            // await apiRequest(url, {method, body}) - Async/await with options object
+            // await apiRequest(url, method, data) - Async/await with params
+
+            if (typeof methodOrData === 'string') {
+                method = methodOrData.toUpperCase();
+                // Check if dataOrCallback is a function (callback pattern without data)
+                if (typeof dataOrCallback === 'function') {
+                    callback = dataOrCallback;
+                    data = null;
+                } else {
+                    data = dataOrCallback;
+                }
+            } else if (typeof methodOrData === 'object' && methodOrData !== null) {
+                // Options object pattern: { method, body, headers }
+                method = (methodOrData.method || 'POST').toUpperCase();
+                body = methodOrData.body;  // Already stringified or FormData
+                data = methodOrData.data;  // Data to stringify
+            }
+
+            const options = {
+                method: method,
+                headers: methodOrData?.headers || {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'  // Important: send cookies with request
+            };
+
+            // Handle body: use pre-stringified body or stringify data
+            if (body) {
+                options.body = body;
+            } else if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+
+                // Check for HTTP errors
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API Error (${response.status}):`, errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                // Check for API-level errors
+                if (!result.success && result.message) {
+                    console.error('API Error:', result.message);
+                    throw new Error(result.message);
+                }
+
+                if (callback) {
+                    callback(result);
+                }
+
+                return result;
+            } catch (error) {
+                console.error('API Request Error:', url, error);
+                if (typeof showToast === 'function') {
+                    showToast('请求失败: ' + error.message, 'error');
+                }
+                throw error;
+            }
+        }
+
+        // Show Loading
+        function showLoading() {
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) spinner.classList.add('show');
+        }
+
+        // Hide Loading
+        function hideLoading() {
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) spinner.classList.remove('show');
+        }
+
+        // Format Date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // Format DateTime
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // Get Severity Badge
+        function getSeverityBadge(severity) {
+            const badges = {
+                'info': '<span class="badge bg-info">信息</span>',
+                'low': '<span class="badge bg-primary">低</span>',
+                'medium': '<span class="badge bg-warning">中</span>',
+                'high': '<span class="badge bg-danger">高</span>',
+                'critical': '<span class="badge bg-dark">严重</span>'
+            };
+            return badges[severity] || '<span class="badge bg-secondary">未知</span>';
+        }
+
+        // Render Pagination
+        function renderPagination(containerId, total, perPage, currentPage, callbackName) {
+            const container = document.getElementById(containerId);
+            if (!container || total === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(total / perPage);
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<nav><ul class="pagination justify-content-center">';
+
+            // Previous button
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="${callbackName}(${currentPage - 1}); return false;">&laquo;</a>
+            </li>`;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="${callbackName}(${i}); return false;">${i}</a>
+                    </li>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+
+            // Next button
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="${callbackName}(${currentPage + 1}); return false;">&raquo;</a>
+            </li>`;
+
+            html += '</ul></nav>';
+            container.innerHTML = html;
+        }
+
+        // Toggle Select All
+        function toggleSelectAll(type) {
+            const selectAll = document.getElementById(`select-all-${type}`);
+            const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        }
+
+        // Show Toast
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- SDN智能体聊天机器人 -->
+    {% include 'admin/intent_chatbot.html' %}
+</body>
+</html>

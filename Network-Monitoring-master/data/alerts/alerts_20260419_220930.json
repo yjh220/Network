@@ -1,0 +1,86 @@
+[
+  {
+    "alert_id": "ALERT-1776607541-8525",
+    "timestamp": "2026-04-19T22:05:41.052154",
+    "alert_type": "DDoS\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.162",
+    "dst_ip": "10.0.0.212",
+    "port": 57614,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776607586-2427",
+    "timestamp": "2026-04-19T22:06:26.070685",
+    "alert_type": "XSS\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.16",
+    "dst_ip": "10.0.0.174",
+    "port": 12053,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776607641-6867",
+    "timestamp": "2026-04-19T22:07:21.078337",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.168",
+    "dst_ip": "10.0.0.36",
+    "port": 29540,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1776607666-8547",
+    "timestamp": "2026-04-19T22:07:46.081219",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.114",
+    "dst_ip": "10.0.0.188",
+    "port": 35014,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1776607676-5321",
+    "timestamp": "2026-04-19T22:07:56.083741",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.164",
+    "dst_ip": "10.0.0.59",
+    "port": 25767,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776607691-2984",
+    "timestamp": "2026-04-19T22:08:11.086221",
+    "alert_type": "\u66b4\u529b\u7834\u89e3",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.221",
+    "dst_ip": "10.0.0.234",
+    "port": 15372,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u66b4\u529b\u7834\u89e3\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1776607701-7047",
+    "timestamp": "2026-04-19T22:08:21.088159",
+    "alert_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.206",
+    "dst_ip": "10.0.0.58",
+    "port": 33299,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

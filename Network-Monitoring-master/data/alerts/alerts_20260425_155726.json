@@ -1,0 +1,98 @@
+[
+  {
+    "alert_id": "ALERT-1777103732-2779",
+    "timestamp": "2026-04-25T15:55:32.600402",
+    "alert_type": "\u7aef\u53e3\u626b\u63cf",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.86",
+    "dst_ip": "10.0.0.136",
+    "port": 20411,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u7aef\u53e3\u626b\u63cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777103747-3966",
+    "timestamp": "2026-04-25T15:55:47.681082",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.202",
+    "dst_ip": "10.0.0.94",
+    "port": 47397,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1777103762-2021",
+    "timestamp": "2026-04-25T15:56:02.780409",
+    "alert_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.137",
+    "dst_ip": "10.0.0.48",
+    "port": 18019,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1777103797-7064",
+    "timestamp": "2026-04-25T15:56:37.895086",
+    "alert_type": "\u7aef\u53e3\u626b\u63cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.17",
+    "dst_ip": "10.0.0.73",
+    "port": 37670,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u7aef\u53e3\u626b\u63cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1777103823-7618",
+    "timestamp": "2026-04-25T15:57:03.013371",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.178",
+    "dst_ip": "10.0.0.90",
+    "port": 59451,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777103828-1672",
+    "timestamp": "2026-04-25T15:57:08.014412",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.131",
+    "dst_ip": "10.0.0.42",
+    "port": 7173,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777103833-1887",
+    "timestamp": "2026-04-25T15:57:13.019003",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.57",
+    "dst_ip": "10.0.0.94",
+    "port": 3905,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777103838-2305",
+    "timestamp": "2026-04-25T15:57:18.028662",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.111",
+    "dst_ip": "10.0.0.17",
+    "port": 23930,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

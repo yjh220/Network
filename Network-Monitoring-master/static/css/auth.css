@@ -1,0 +1,180 @@
+.auth-body {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-container {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: center;
+    max-width: 900px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    padding: 2.5rem;
+    flex: 1;
+    max-width: 450px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-logo {
+    font-size: 3rem;
+    color: #2a5298;
+    margin-bottom: 1rem;
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.auth-card .form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+}
+
+.auth-card .form-control:focus {
+    border-color: #2a5298;
+    box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.25);
+}
+
+.auth-card .input-group-text {
+    border-radius: 8px 0 0 8px;
+    background-color: #f8f9fa;
+    border-color: #ddd;
+}
+
+.auth-card .input-group .form-control {
+    border-radius: 0 8px 8px 0;
+}
+
+.auth-card .btn-primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 500;
+    width: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-card .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(42, 82, 152, 0.4);
+}
+
+.auth-card .btn-block {
+    margin-top: 1.5rem;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.auth-footer p {
+    margin: 0;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #2a5298;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.auth-info {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 2rem;
+    color: #333;
+    flex: 1;
+    max-width: 350px;
+}
+
+.auth-info h4 {
+    color: #2a5298;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.auth-info p {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.auth-info code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: #2a5298;
+    font-family: 'Courier New', monospace;
+}
+
+.auth-info ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.auth-info li {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .auth-card,
+    .auth-info {
+        max-width: 100%;
+    }
+
+    .auth-info {
+        order: -1;
+    }
+}
+
+.alert {
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.btn-outline-secondary {
+    border-left: none;
+}
+
+.input-group .btn-outline-secondary {
+    border-radius: 0 8px 8px 0;
+}

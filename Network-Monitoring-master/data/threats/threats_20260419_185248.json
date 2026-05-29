@@ -1,0 +1,15 @@
+[
+  {
+    "threat_id": "THREAT-1776595950-8499",
+    "timestamp": "2026-04-19T18:52:30.280086",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.185",
+    "dst_ip": "10.0.0.243",
+    "port": 24451,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

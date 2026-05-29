@@ -1,0 +1,925 @@
+{% extends "admin/base.html" %}
+
+{% block title %}监控管理 - 后台管理系统{% endblock %}
+
+{% block page_title %}监控管理{% endblock %}
+
+{% block content %}
+<!-- Monitor Management Tabs -->
+<ul class="nav nav-tabs mb-3" id="monitorTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button">
+            <i class="fas fa-cog me-2"></i>监控配置
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="interface-tab" data-bs-toggle="tab" data-bs-target="#interface" type="button">
+            <i class="fas fa-network-wired me-2"></i>网卡管理
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button">
+            <i class="fas fa-layer-group me-2"></i>协议配置
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="whitelist-tab" data-bs-toggle="tab" data-bs-target="#whitelist" type="button">
+            <i class="fas fa-shield-alt me-2"></i>IP白名单
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="traffic-tab" data-bs-toggle="tab" data-bs-target="#traffic" type="button">
+            <i class="fas fa-chart-bar me-2"></i>流量统计
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="monitorTabContent">
+
+    <!-- Monitor Configuration -->
+    <div class="tab-pane fade show active" id="config" role="tabpanel">
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-outline-secondary btn-sm" id="initMonitorBtn">
+                    <i class="fas fa-sync me-2"></i>初始化配置
+                </button>
+            </div>
+        </div>
+
+        <!-- Capture Settings -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-capture me-2"></i>抓包配置</h6>
+            </div>
+            <div class="card-body">
+                <div class="row" id="captureConfig">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage Settings -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-database me-2"></i>存储配置</h6>
+            </div>
+            <div class="card-body">
+                <div class="row" id="storageConfig">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-brain me-2"></i>分析配置</h6>
+            </div>
+            <div class="card-body">
+                <div class="row" id="analysisConfig">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Interface Management -->
+    <div class="tab-pane fade" id="interface" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-outline-primary btn-sm" id="syncInterfacesBtn">
+                <i class="fas fa-sync me-2"></i>同步网卡
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>网卡名称</th>
+                            <th>IP地址</th>
+                            <th>MAC地址</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="interfaceTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Protocol Configuration -->
+    <div class="tab-pane fade" id="protocol" role="tabpanel">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>协议</th>
+                            <th>端口范围</th>
+                            <th>检测级别</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="protocolTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- IP Whitelist -->
+    <div class="tab-pane fade" id="whitelist" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <input type="text" class="form-control form-control-sm" id="whitelistSearch"
+                   placeholder="搜索IP..." style="width: 250px;">
+            <button class="btn btn-primary btn-sm" id="addToWhitelistBtn">
+                <i class="fas fa-plus me-2"></i>添加白名单
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>IP地址</th>
+                            <th>IP范围</th>
+                            <th>描述</th>
+                            <th>添加时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="whitelistTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="whitelistTableInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="whitelistPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traffic Statistics -->
+    <div class="tab-pane fade" id="traffic" role="tabpanel">
+        <!-- Traffic Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">总数据包</h6>
+                        <h3 class="card-title mb-0" id="totalPackets">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">总字节数</h6>
+                        <h3 class="card-title mb-0" id="totalBytes">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">威胁数量</h6>
+                        <h3 class="card-title mb-0 text-danger" id="threatCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">协议数量</h6>
+                        <h3 class="card-title mb-0" id="protocolCount">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" id="trafficProtocolFilter" style="width: 120px;">
+                    <option value="">全部协议</option>
+                    <option value="TCP">TCP</option>
+                    <option value="UDP">UDP</option>
+                    <option value="HTTP">HTTP</option>
+                    <option value="HTTPS">HTTPS</option>
+                    <option value="ICMP">ICMP</option>
+                </select>
+                <select class="form-select form-select-sm" id="trafficThreatFilter" style="width: 120px;">
+                    <option value="">全部状态</option>
+                    <option value="true">仅威胁</option>
+                    <option value="false">正常</option>
+                </select>
+            </div>
+            <button class="btn btn-outline-danger btn-sm" id="cleanupTrafficBtn">
+                <i class="fas fa-trash me-2"></i>清理数据
+            </button>
+        </div>
+
+        <!-- Traffic Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>时间</th>
+                                <th>源IP:端口</th>
+                                <th>目标IP:端口</th>
+                                <th>协议</th>
+                                <th>数据包</th>
+                                <th>字节数</th>
+                                <th>威胁</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trafficTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3">
+                <div class="text-muted" id="trafficTableInfo">显示 0 条记录</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0" id="trafficPagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add to Whitelist Modal -->
+<div class="modal fade" id="whitelistModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加IP白名单</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="whitelistForm">
+                    <div class="mb-3">
+                        <label class="form-label">IP地址 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="whitelistIP" required
+                               placeholder="192.168.1.100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IP范围</label>
+                        <input type="text" class="form-control" id="whitelistRange"
+                               placeholder="192.168.1.0/24">
+                        <div class="form-text">支持CIDR格式</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-control" id="whitelistDesc" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveWhitelistBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cleanup Traffic Modal -->
+<div class="modal fade" id="cleanupTrafficModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">清理流量数据</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cleanupTrafficForm">
+                    <div class="mb-3">
+                        <label class="form-label">清理方式</label>
+                        <select class="form-select" id="cleanupType">
+                            <option value="before_date">清理指定日期之前的数据</option>
+                            <option value="threat_only">只保留威胁记录</option>
+                            <option value="all">清理所有数据</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">保留天数</label>
+                        <input type="number" class="form-control" id="cleanupDays" value="30" min="1" max="365">
+                        <div class="form-text">将删除指定天数之前的所有数据</div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        此操作不可恢复，请谨慎操作！
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmCleanupBtn">确认清理</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentWhitelistPage = 1;
+let currentTrafficPage = 1;
+const perPage = 20;
+
+// Load Monitor Configurations
+async function loadMonitorConfigs() {
+    try {
+        const response = await apiRequest('/admin/api/monitor/configs');
+        const configs = response.data;
+
+        const categories = {
+            'capture': { element: 'captureConfig', title: '抓包配置' },
+            'storage': { element: 'storageConfig', title: '存储配置' },
+            'analysis': { element: 'analysisConfig', title: '分析配置' }
+        };
+
+        for (const [category, info] of Object.entries(categories)) {
+            const categoryConfigs = configs.filter(c => c.category === category);
+            const element = document.getElementById(info.element);
+
+            if (categoryConfigs.length === 0) {
+                element.innerHTML = '<div class="col-12 text-center text-muted">暂无配置</div>';
+                continue;
+            }
+
+            element.innerHTML = categoryConfigs.map(config => `
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">${config.description || config.key}</label>
+                    ${renderConfigInput(config)}
+                </div>
+            `).join('');
+        }
+
+        // Add event listeners for config changes
+        document.querySelectorAll('[data-config-key]').forEach(input => {
+            input.addEventListener('change', async function() {
+                const key = this.dataset.configKey;
+                let value = this.type === 'checkbox' ? this.checked : this.value;
+
+                if (this.type === 'number') {
+                    value = parseFloat(value);
+                }
+
+                try {
+                    const response = await apiRequest(`/admin/api/monitor/configs/${key}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ value })
+                    });
+                    showToast('配置更新成功');
+                } catch (error) {
+                    showToast('配置更新失败', 'error');
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error('Failed to load configs:', error);
+    }
+}
+
+function renderConfigInput(config) {
+    const key = config.key;
+    const value = config.value;
+
+    switch (config.value_type) {
+        case 'bool':
+            return `
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox"
+                           id="config_${key}" data-config-key="${key}" ${value ? 'checked' : ''}>
+                    <label class="form-check-label" for="config_${key}">
+                        ${value ? '启用' : '禁用'}
+                    </label>
+                </div>`;
+        case 'int':
+            return `
+                <input type="number" class="form-control" id="config_${key}"
+                       data-config-key="${key}" value="${value}">`;
+        case 'float':
+            return `
+                <input type="number" step="0.1" class="form-control" id="config_${key}"
+                       data-config-key="${key}" value="${value}">`;
+        default:
+            return `
+                <input type="text" class="form-control" id="config_${key}"
+                       data-config-key="${key}" value="${value}">`;
+    }
+}
+
+// Load Network Interfaces
+async function loadNetworkInterfaces() {
+    try {
+        const response = await apiRequest('/admin/api/monitor/interfaces');
+        const interfaces = response.data;
+
+        const tbody = document.getElementById('interfaceTableBody');
+
+        if (interfaces.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">暂无网卡</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = interfaces.map(iface => `
+            <tr>
+                <td><strong>${iface.display_name}</strong></td>
+                <td>${iface.ip_address || '-'}</td>
+                <td>${iface.mac_address || '-'}</td>
+                <td>
+                    ${iface.is_monitoring
+                        ? '<span class="badge badge-success">监控中</span>'
+                        : '<span class="badge badge-secondary">未启用</span>'
+                    }
+                </td>
+                <td>
+                    ${iface.is_monitoring
+                        ? `<button class="btn btn-sm btn-outline-secondary" onclick="stopMonitoring(${iface.id})">停止</button>`
+                        : `<button class="btn btn-sm btn-outline-primary" onclick="startMonitoring(${iface.id})">启用</button>`
+                    }
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load interfaces:', error);
+    }
+}
+
+async function startMonitoring(interfaceId) {
+    try {
+        await apiRequest(`/admin/api/monitor/interfaces/${interfaceId}/monitor`, {
+            method: 'POST',
+            body: JSON.stringify({ is_monitoring: true })
+        });
+        showToast('网卡监控已启用');
+        loadNetworkInterfaces();
+    } catch (error) {
+        console.error('Failed to start monitoring:', error);
+        showToast('启用监控失败', 'error');
+    }
+}
+
+async function stopMonitoring(interfaceId) {
+    try {
+        await apiRequest(`/admin/api/monitor/interfaces/${interfaceId}/monitor`, {
+            method: 'POST',
+            body: JSON.stringify({ is_monitoring: false })
+        });
+        showToast('网卡监控已停止');
+        loadNetworkInterfaces();
+    } catch (error) {
+        console.error('Failed to stop monitoring:', error);
+        showToast('停止监控失败', 'error');
+    }
+}
+
+// Load Protocol Configurations
+async function loadProtocolConfigs() {
+    try {
+        const response = await apiRequest('/admin/api/monitor/protocols');
+        const protocols = response.data;
+
+        const tbody = document.getElementById('protocolTableBody');
+
+        if (protocols.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">暂无协议配置</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = protocols.map(proto => `
+            <tr>
+                <td><strong>${proto.protocol}</strong></td>
+                <td>${proto.port_range || '全部端口'}</td>
+                <td>
+                    <span class="badge ${proto.inspection_level === 'full' ? 'bg-danger' : proto.inspection_level === 'deep' ? 'bg-warning' : 'bg-info'}">
+                        ${proto.inspection_level}
+                    </span>
+                </td>
+                <td>
+                    ${proto.is_enabled
+                        ? '<span class="badge badge-success">启用</span>'
+                        : '<span class="badge badge-secondary">禁用</span>'
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editProtocol(${proto.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load protocols:', error);
+    }
+}
+
+async function editProtocol(protocolId) {
+    try {
+        const response = await apiRequest('/admin/api/monitor/protocols');
+        const protocols = response.data;
+        const protocol = protocols.find(p => p.id === protocolId);
+
+        if (!protocol) {
+            showToast('协议不存在', 'error');
+            return;
+        }
+
+        const { value: portRange } = await Swal.fire({
+            title: '编辑协议配置',
+            html:
+                `<div class="text-start">
+                    <p><strong>协议:</strong> ${protocol.protocol}</p>
+                    <p><strong>描述:</strong> ${protocol.description || '-'}</p>
+                    <div class="mb-3">
+                        <label class="form-label">端口范围:</label>
+                        <input id="swal-portRange" class="form-control" value="${protocol.port_range || ''}" placeholder="80,443,8080-8090">
+                        <div class="form-text">多个端口用逗号分隔，端口范围用-连接</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">检测级别:</label>
+                        <select id="swal-inspectionLevel" class="form-select">
+                            <option value="basic" ${protocol.inspection_level === 'basic' ? 'selected' : ''}>基础</option>
+                            <option value="deep" ${protocol.inspection_level === 'deep' ? 'selected' : ''}>深度</option>
+                            <option value="full" ${protocol.inspection_level === 'full' ? 'selected' : ''}>完全</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="swal-isEnabled" ${protocol.is_enabled ? 'checked' : ''}>
+                        <label class="form-check-label" for="swal-isEnabled">
+                            启用协议
+                        </label>
+                    </div>
+                </div>`,
+            showCancelButton: true,
+            confirmButtonText: '保存',
+            cancelButtonText: '取消',
+            preConfirm: () => {
+                return {
+                    portRange: document.getElementById('swal-portRange').value,
+                    inspectionLevel: document.getElementById('swal-inspectionLevel').value,
+                    isEnabled: document.getElementById('swal-isEnabled').checked
+                };
+            }
+        });
+
+        if (value.isConfirmed) {
+            await apiRequest(`/admin/api/monitor/protocols/${protocolId}`, {
+                method: 'PUT',
+                body: JSON.stringify(value)
+            });
+            showToast('协议配置更新成功');
+            loadProtocolConfigs();
+        }
+
+    } catch (error) {
+        console.error('Failed to edit protocol:', error);
+        showToast('协议编辑失败', 'error');
+    }
+}
+
+// Load IP Whitelist
+async function loadIPWhitelist() {
+    try {
+        let url = `/admin/api/monitor/whitelist?page=${currentWhitelistPage}&per_page=${perPage}`;
+        const search = document.getElementById('whitelistSearch').value;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const response = await apiRequest(url);
+        const { whitelist, total } = response.data;
+
+        const tbody = document.getElementById('whitelistTableBody');
+
+        if (whitelist.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无白名单</td></tr>';
+            document.getElementById('whitelistPagination').innerHTML = '';
+            return;
+        }
+
+        tbody.innerHTML = whitelist.map(item => `
+            <tr>
+                <td><strong>${item.ip_address}</strong></td>
+                <td>${item.ip_range || '-'}</td>
+                <td>${item.description || '-'}</td>
+                <td>${formatDate(item.added_at)}</td>
+                <td>
+                    ${item.is_active
+                        ? '<span class="badge badge-success">启用</span>'
+                        : '<span class="badge badge-secondary">禁用</span>'
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeFromWhitelist(${item.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        renderPagination('whitelistPagination', total, currentWhitelistPage, 'goToWhitelistPage');
+        document.getElementById('whitelistTableInfo').textContent = `显示 ${whitelist.length} / ${total} 条记录`;
+
+    } catch (error) {
+        console.error('Failed to load whitelist:', error);
+    }
+}
+
+function goToWhitelistPage(page) {
+    currentWhitelistPage = page;
+    loadIPWhitelist();
+}
+
+// Add to Whitelist
+document.getElementById('addToWhitelistBtn').addEventListener('click', function() {
+    document.getElementById('whitelistForm').reset();
+    new bootstrap.Modal(document.getElementById('whitelistModal')).show();
+});
+
+document.getElementById('saveWhitelistBtn').addEventListener('click', async function() {
+    const ipAddress = document.getElementById('whitelistIP').value;
+    const ipRange = document.getElementById('whitelistRange').value;
+    const description = document.getElementById('whitelistDesc').value;
+
+    if (!ipAddress) {
+        Swal.fire('提示', '请输入IP地址', 'warning');
+        return;
+    }
+
+    try {
+        await apiRequest('/admin/api/monitor/whitelist', {
+            method: 'POST',
+            body: JSON.stringify({
+                ip_address: ipAddress,
+                ip_range: ipRange,
+                description: description
+            })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('whitelistModal')).hide();
+        showToast('添加成功');
+        loadIPWhitelist();
+
+    } catch (error) {
+        console.error('Failed to add to whitelist:', error);
+    }
+});
+
+async function removeFromWhitelist(whitelistId) {
+    Swal.fire({
+        title: '确认删除',
+        text: '确定要从白名单中移除此IP吗？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await apiRequest(`/admin/api/monitor/whitelist/${whitelistId}`, {
+                    method: 'DELETE'
+                });
+                showToast('移除成功');
+                loadIPWhitelist();
+            } catch (error) {
+                console.error('Failed to remove from whitelist:', error);
+            }
+        }
+    });
+}
+
+// Load Traffic Statistics
+async function loadTrafficStats() {
+    try {
+        // Load summary
+        const summaryResponse = await apiRequest('/admin/api/monitor/traffic/summary');
+        const summary = summaryResponse.data;
+
+        document.getElementById('totalPackets').textContent = summary.total_packets || 0;
+        document.getElementById('totalBytes').textContent = formatBytes(summary.total_bytes || 0);
+        document.getElementById('threatCount').textContent = summary.threat_count || 0;
+        document.getElementById('protocolCount').textContent = Object.keys(summary.protocol_stats || {}).length;
+
+        // Load detailed stats
+        let url = `/admin/api/monitor/traffic/stats?page=${currentTrafficPage}&per_page=${perPage}`;
+        const protocolFilter = document.getElementById('trafficProtocolFilter').value;
+        const threatFilter = document.getElementById('trafficThreatFilter').value;
+
+        if (protocolFilter) url += `&protocol=${protocolFilter}`;
+        if (threatFilter !== null && threatFilter !== '') url += `&is_threat=${threatFilter}`;
+
+        const response = await apiRequest(url);
+        const { stats, total } = response.data;
+
+        const tbody = document.getElementById('trafficTableBody');
+
+        if (stats.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = stats.map(stat => `
+            <tr>
+                <td>${formatDate(stat.timestamp)}</td>
+                <td>${stat.source_ip}:${stat.source_port || '-'}</td>
+                <td>${stat.dest_ip}:${stat.dest_port || '-'}</td>
+                <td><span class="badge bg-info">${stat.protocol}</span></td>
+                <td>${stat.packet_count}</td>
+                <td>${formatBytes(stat.byte_count)}</td>
+                <td>
+                    ${stat.is_threat
+                        ? `<span class="badge badge-danger">${stat.threat_type || '威胁'}</span>`
+                        : '<span class="badge badge-success">正常</span>'
+                    }
+                </td>
+            </tr>
+        `).join('');
+
+        renderPagination('trafficPagination', total, currentTrafficPage, 'goToTrafficPage');
+        document.getElementById('trafficTableInfo').textContent = `显示 ${stats.length} / ${total} 条记录`;
+
+    } catch (error) {
+        console.error('Failed to load traffic stats:', error);
+    }
+}
+
+function goToTrafficPage(page) {
+    currentTrafficPage = page;
+    loadTrafficStats();
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function renderPagination(elementId, total, currentPage, goToFunction) {
+    const totalPages = Math.ceil(total / perPage);
+    const pagination = document.getElementById(elementId);
+
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let html = `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="${goToFunction}(${currentPage - 1})">上一页</a>
+        </li>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="${goToFunction}(${i})">${i}</a>
+            </li>
+        `;
+    }
+
+    html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="${goToFunction}(${currentPage + 1})">下一页</a>
+        </li>
+    `;
+
+    pagination.innerHTML = html;
+}
+
+// Cleanup Traffic Data
+document.getElementById('cleanupTrafficBtn').addEventListener('click', function() {
+    document.getElementById('cleanupTrafficForm').reset();
+    new bootstrap.Modal(document.getElementById('cleanupTrafficModal')).show();
+});
+
+document.getElementById('confirmCleanupBtn').addEventListener('click', async function() {
+    const cleanupType = document.getElementById('cleanupType').value;
+    const days = parseInt(document.getElementById('cleanupDays').value);
+
+    try {
+        const response = await apiRequest('/admin/api/monitor/traffic/cleanup', {
+            method: 'POST',
+            body: JSON.stringify({ cleanup_type: cleanupType, days })
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('cleanupTrafficModal')).hide();
+        Swal.fire('清理完成', `已删除 ${response.count} 条记录`, 'success');
+        loadTrafficStats();
+
+    } catch (error) {
+        console.error('Failed to cleanup traffic:', error);
+    }
+});
+
+// Initialize Monitor Data
+document.getElementById('initMonitorBtn').addEventListener('click', async function() {
+    try {
+        await apiRequest('/admin/api/monitor/init', {
+            method: 'POST'
+        });
+        showToast('初始化成功');
+        loadMonitorConfigs();
+        loadProtocolConfigs();
+    } catch (error) {
+        console.error('Failed to initialize:', error);
+    }
+});
+
+// Sync Interfaces
+document.getElementById('syncInterfacesBtn').addEventListener('click', async function() {
+    try {
+        await apiRequest('/admin/api/monitor/interfaces', { method: 'GET' });
+        showToast('网卡同步成功');
+        loadNetworkInterfaces();
+    } catch (error) {
+        console.error('Failed to sync interfaces:', error);
+    }
+});
+
+// Search handlers
+document.getElementById('whitelistSearch').addEventListener('input', function() {
+    currentWhitelistPage = 1;
+    loadIPWhitelist();
+});
+
+document.getElementById('trafficProtocolFilter').addEventListener('change', () => {
+    currentTrafficPage = 1;
+    loadTrafficStats();
+});
+
+document.getElementById('trafficThreatFilter').addEventListener('change', () => {
+    currentTrafficPage = 1;
+    loadTrafficStats();
+});
+
+// Tab change handlers
+document.querySelectorAll('#monitorTabs button').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', event => {
+        if (event.target.id === 'config-tab') {
+            loadMonitorConfigs();
+        } else if (event.target.id === 'interface-tab') {
+            loadNetworkInterfaces();
+        } else if (event.target.id === 'protocol-tab') {
+            loadProtocolConfigs();
+        } else if (event.target.id === 'whitelist-tab') {
+            loadIPWhitelist();
+        } else if (event.target.id === 'traffic-tab') {
+            loadTrafficStats();
+        }
+    });
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadMonitorConfigs();
+});
+</script>
+{% endblock %}

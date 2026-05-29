@@ -1,0 +1,62 @@
+[
+  {
+    "alert_id": "ALERT-1777104218-3210",
+    "timestamp": "2026-04-25T16:03:38.660736",
+    "alert_type": "SQL\u6ce8\u5165\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.129",
+    "dst_ip": "10.0.0.23",
+    "port": 56552,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1777104228-6649",
+    "timestamp": "2026-04-25T16:03:48.679651",
+    "alert_type": "DDoS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.150",
+    "dst_ip": "10.0.0.109",
+    "port": 63767,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777104233-7168",
+    "timestamp": "2026-04-25T16:03:53.689569",
+    "alert_type": "\u66b4\u529b\u7834\u89e3",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.242",
+    "dst_ip": "10.0.0.48",
+    "port": 36303,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u66b4\u529b\u7834\u89e3\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1777104238-6623",
+    "timestamp": "2026-04-25T16:03:58.902158",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.104",
+    "dst_ip": "10.0.0.214",
+    "port": 31479,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1777104248-1876",
+    "timestamp": "2026-04-25T16:04:08.923376",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.98",
+    "dst_ip": "10.0.0.159",
+    "port": 39974,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  }
+]

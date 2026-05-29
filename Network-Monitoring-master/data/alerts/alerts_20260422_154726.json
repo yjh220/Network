@@ -1,0 +1,62 @@
+[
+  {
+    "alert_id": "ALERT-1776843946-2901",
+    "timestamp": "2026-04-22T15:45:46.534068",
+    "alert_type": "DDoS\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.4",
+    "dst_ip": "10.0.0.231",
+    "port": 4630,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776843956-3960",
+    "timestamp": "2026-04-22T15:45:56.605663",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.200",
+    "dst_ip": "10.0.0.187",
+    "port": 3667,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776843961-6250",
+    "timestamp": "2026-04-22T15:46:01.626104",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.92",
+    "dst_ip": "10.0.0.189",
+    "port": 51679,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  },
+  {
+    "alert_id": "ALERT-1776843966-4108",
+    "timestamp": "2026-04-22T15:46:06.640278",
+    "alert_type": "\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.88",
+    "dst_ip": "10.0.0.185",
+    "port": 10146,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u53ef\u7591\u6587\u4ef6\u4e0b\u8f7d\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  },
+  {
+    "alert_id": "ALERT-1776844006-8293",
+    "timestamp": "2026-04-22T15:46:46.835052",
+    "alert_type": "\u66b4\u529b\u7834\u89e3",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.182",
+    "dst_ip": "10.0.0.115",
+    "port": 22751,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u66b4\u529b\u7834\u89e3\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u8bb0\u5f55"
+  }
+]

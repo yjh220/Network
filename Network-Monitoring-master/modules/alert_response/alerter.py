@@ -14,6 +14,19 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+# 全局变量，用于存储Flask app和数据库引用
+_sync_app = None
+_sync_db = None
+
+def init_with_app(app):
+    """初始化时传入Flask app，用于数据库同步"""
+    global _sync_app, _sync_db
+    _sync_app = app
+    # 在app_context中获取db
+    with app.app_context():
+        from models_admin import db
+        _sync_db = db
+
 class AlertSystem:
     def __init__(self, socketio=None):
         self.is_running = False
@@ -122,27 +135,61 @@ class AlertSystem:
         try:
             # 添加到告警列表
             self.alerts.append(alert_data)
-            
+
             # 限制告警列表大小
             if len(self.alerts) > 10000:
                 self.alerts = self.alerts[-10000:]
-            
+
+            # 同步到数据库
+            if _sync_db:
+                try:
+                    from models_admin import AlertRecord, AlertRule
+
+                    # 映射严重程度
+                    severity_map = {'低': 'low', '中': 'medium', '高': 'high'}
+                    severity_en = severity_map.get(alert_data['severity'], 'medium')
+
+                    # 创建告警记录
+                    alert = AlertRecord(
+                        rule_id=None,
+                        rule_name=alert_data['alert_type'],
+                        severity=severity_en,
+                        message=alert_data['details']
+                    )
+
+                    # 添加详细信息
+                    alert.details = json.dumps({
+                        'src_ip': alert_data['src_ip'],
+                        'dst_ip': alert_data['dst_ip'],
+                        'port': alert_data['port'],
+                        'protocol': alert_data['protocol'],
+                        'action_taken': alert_data['action_taken']
+                    }, ensure_ascii=False)
+
+                    _sync_db.session.add(alert)
+                    _sync_db.session.commit()
+                    logger.info(f"告警已记录到数据库: {alert_data['alert_type']}")
+                except Exception as e:
+                    logger.error(f"同步告警到数据库失败: {str(e)}")
+                    if _sync_db:
+                        _sync_db.session.rollback()
+
             # 检查是否需要发送通知
             should_notify = self._should_send_notification(alert_data)
-            
+
             if should_notify:
                 # 发送Web通知
                 if self.config['web_notification'] and self.socketio:
                     self.socketio.emit('new_alert', alert_data)
-                
+
                 # 发送邮件通知
                 if self.config['email_notification'] and self.config['email_recipients']:
                     self._send_email_notification(alert_data)
-            
+
             logger.info(f"处理告警: {alert_data['alert_type']}, 严重性: {alert_data['severity']}, 来源: {alert_data['src_ip']}")
-            
+
             return True
-        
+
         except Exception as e:
             logger.error(f"处理告警失败: {str(e)}")
             return False

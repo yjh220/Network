@@ -1,0 +1,536 @@
+<!-- SDN智能体聊天机器人 - 可嵌入组件 -->
+<style>
+.sdn-chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 聊天按钮 */
+.chatbot-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.chatbot-toggle-btn i {
+    font-size: 24px;
+    color: white;
+}
+
+/* 聊天窗口 */
+.chatbot-window {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 380px;
+    height: 550px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot-window.active {
+    display: flex;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 头部 */
+.chatbot-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    color: white;
+}
+
+.chatbot-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.chatbot-header p {
+    margin: 5px 0 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* SDN状态指示器 */
+.sdn-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.sdn-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.sdn-status-dot.disconnected {
+    background: #f87171;
+    animation: none;
+}
+
+/* 消息区域 */
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 15px;
+    animation: messageIn 0.3s ease-out;
+}
+
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.user {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.message.bot {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message.user .message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.bot .message-bubble {
+    background: white;
+    color: #333;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* 快捷指令 */
+.quick-commands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.quick-command-btn {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-command-btn:hover {
+    background: #f0f0ff;
+    border-color: #667eea;
+}
+
+/* 输入区域 */
+.chatbot-input-area {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+}
+
+.chatbot-input-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.chatbot-input {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chatbot-input:focus {
+    border-color: #667eea;
+}
+
+.chatbot-send-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.chatbot-send-btn:hover {
+    transform: scale(1.05);
+}
+
+.chatbot-send-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 正在输入动画 */
+.typing-indicator {
+    display: flex;
+    gap: 5px;
+    padding: 12px 16px;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+/* 成功/失败状态 */
+.message.success .message-bubble {
+    background: #d1fae5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.message.error .message-bubble {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+/* 滚动条美化 */
+.chatbot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+</style>
+
+<div class="sdn-chatbot-container">
+    <!-- 聊天按钮 -->
+    <button class="chatbot-toggle-btn" id="chatbotToggle" onclick="toggleChatbot()">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <!-- 聊天窗口 -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <!-- 头部 -->
+        <div class="chatbot-header">
+            <h3>🤖 智能助手</h3>
+            <p>控制网络与系统</p>
+            <div class="sdn-status-indicator">
+                <span class="sdn-status-dot" id="sdnStatusDot"></span>
+                <span id="sdnStatusText">正在连接...</span>
+            </div>
+        </div>
+
+        <!-- 消息区域 -->
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- 欢迎消息 -->
+            <div class="message bot">
+                <div class="message-bubble">
+                    👋 您好！我是智能助手，可以帮助您控制网络和系统。
+                    <div class="quick-commands">
+                        <button class="quick-command-btn" onclick="sendQuickCommand('阻断 10.0.0.1')">🚫 阻断IP</button>
+                        <button class="quick-command-btn" onclick="sendQuickCommand('限速 100Mbps')">⚡ 限速</button>
+                        <button class="quick-command-btn" onclick="sendQuickCommand('查询网络状态')">📊 网络状态</button>
+                        <button class="quick-command-btn" onclick="sendQuickCommand('查看系统状态')">🖥️ 系统状态</button>
+                        <button class="quick-command-btn" onclick="sendQuickCommand('启动监控')">🔍 启动监控</button>
+                        <button class="quick-command-btn" onclick="sendQuickCommand('检查威胁')">🛡️ 检查威胁</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="chatbot-input-area">
+            <div class="chatbot-input-wrapper">
+                <input
+                    type="text"
+                    class="chatbot-input"
+                    id="chatbotInput"
+                    placeholder="输入指令：阻断IP、限速、启动监控、查看状态..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button class="chatbot-send-btn" id="chatbotSendBtn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 聊天机器人状态
+let chatbotOpen = false;
+let sdnConnected = false;
+
+// 切换聊天窗口
+function toggleChatbot() {
+    chatbotOpen = !chatbotOpen;
+    const window = document.getElementById('chatbotWindow');
+    const btn = document.getElementById('chatbotToggle');
+
+    if (chatbotOpen) {
+        window.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-times"></i>';
+        // 滚动到底部
+        scrollToBottom();
+    } else {
+        window.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-robot"></i>';
+    }
+}
+
+// 发送消息
+async function sendMessage() {
+    const input = document.getElementById('chatbotInput');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    // 添加用户消息
+    addMessage('user', message);
+    input.value = '';
+
+    // 显示正在输入
+    showTypingIndicator();
+
+    try {
+        // 调用意图API
+        const response = await fetch('/api/intent/natural', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: message })
+        });
+
+        const data = await response.json();
+
+        // 移除正在输入
+        hideTypingIndicator();
+
+        // 添加回复
+        if (data.success) {
+            addMessage('bot', `✅ ${data.message}`, 'success');
+            if (data.parsed_intent) {
+                addMessage('bot', `📋 解析意图: ${data.parsed_intent.intent_type} (置信度: ${Math.round(data.parsed_intent.confidence * 100)}%)`);
+            }
+        } else {
+            addMessage('bot', `❌ ${data.message}`, 'error');
+        }
+
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage('bot', `❌ 请求失败: ${error.message}`, 'error');
+    }
+}
+
+// 快捷指令
+function sendQuickCommand(command) {
+    document.getElementById('chatbotInput').value = command;
+    sendMessage();
+}
+
+// 添加消息
+function addMessage(type, text, status = '') {
+    const messagesContainer = document.getElementById('chatbotMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type} ${status}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.textContent = text;
+
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    time.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+    messageDiv.appendChild(bubble);
+    if (type === 'bot') {
+        messageDiv.appendChild(time);
+    }
+
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// 显示正在输入
+function showTypingIndicator() {
+    const messagesContainer = document.getElementById('chatbotMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="message-bubble">
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    `;
+    messagesContainer.appendChild(typingDiv);
+    scrollToBottom();
+}
+
+// 隐藏正在输入
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// 滚动到底部
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chatbotMessages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// 处理回车键
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+// 检查SDN状态
+async function checkSDNStatus() {
+    try {
+        const response = await fetch('/api/intent/status');
+        const data = await response.json();
+
+        const dot = document.getElementById('sdnStatusDot');
+        const text = document.getElementById('sdnStatusText');
+
+        if (data.status && data.status.sdn_connected) {
+            dot.classList.remove('disconnected');
+            text.textContent = `SDN已连接 (${data.status.switches_count}台交换机)`;
+            sdnConnected = true;
+        } else {
+            dot.classList.add('disconnected');
+            text.textContent = 'SDN未连接';
+            sdnConnected = false;
+        }
+    } catch (error) {
+        console.error('SDN状态检查失败:', error);
+        const dot = document.getElementById('sdnStatusDot');
+        const text = document.getElementById('sdnStatusText');
+        dot.classList.add('disconnected');
+        text.textContent = 'SDN不可用';
+        sdnConnected = false;
+    }
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    checkSDNStatus();
+    // 每30秒检查一次状态
+    setInterval(checkSDNStatus, 30000);
+});
+</script>

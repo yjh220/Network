@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>执行结果验证 - AI 检测计划</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .verification-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .verification-card.success {
+            border-left-color: #28a745;
+        }
+        .verification-card.error {
+            border-left-color: #dc3545;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-indicator.online {
+            background: #28a745;
+            box-shadow: 0 0 8px #28a745;
+        }
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+        .log-entry {
+            font-family: monospace;
+            font-size: 12px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        #realtimeLogs {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h2><i class="fa fa-check-circle"></i> 执行结果验证</h2>
+                <hr>
+            </div>
+        </div>
+
+        <!-- 系统状态检查 -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="card verification-card">
+                    <div class="card-header">
+                        <h5><i class="fa fa-server"></i> SDN控制器状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="status-indicator" id="sdnStatus"></span>
+                            <span id="sdnStatusText">检查中...</span>
+                        </div>
+                        <div id="sdnInfo">
+                            <p>控制器地址: http://172.20.10.3:8080</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card verification-card">
+                    <div class="card-header">
+                        <h5><i class="fa fa-robot"></i> AI配置状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="status-indicator" id="aiStatus"></span>
+                            <span id="aiStatusText">检查中...</span>
+                        </div>
+                        <div id="aiInfo">
+                            <p>配置文件: data/ai_config.json</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 执行记录 -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fa fa-history"></i> 执行记录</h5>
+                        <button class="btn btn-sm btn-primary" onclick="loadExecutionLogs()">
+                            <i class="fa fa-refresh"></i> 刷新
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="executionLogs">
+                            <p class="text-muted">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时验证 -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa fa-flask"></i> 功能验证测试</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-success w-100" onclick="testTopology()">
+                                    <i class="fa fa-project-diagram"></i><br>
+                                    测试网络拓扑
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-info w-100" onclick="testAIChat()">
+                                    <i class="fa fa-comment"></i><br>
+                                    测试AI对话
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-warning w-100" onclick="testPlanGeneration()">
+                                    <i class="fa fa-magic"></i><br>
+                                    测试计划生成
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-danger w-100" onclick="testPlanExecution()">
+                                    <i class="fa fa-play"></i><br>
+                                    测试计划执行
+                                </button>
+                            </div>
+                        </div>
+                        <div id="testResults" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时日志 -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa fa-terminal"></i> 实时日志</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="realtimeLogs">
+                            <p class="text-muted">等待日志...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 页面加载时检查状态
+        $(document).ready(function() {
+            checkSDNStatus();
+            checkAIStatus();
+            loadExecutionLogs();
+        });
+
+        function checkSDNStatus() {
+            $.get('/api/sdn/status', function(data) {
+                if (data.success) {
+                    $('#sdnStatus').addClass('online');
+                    $('#sdnStatusText').text('在线 - ' + data.switches_count + ' 台交换机');
+                    $('#sdnInfo').append('<p>主机数量: ' + Object.keys(data.hosts || {}).length + ' 台</p>');
+                } else {
+                    $('#sdnStatus').addClass('offline');
+                    $('#sdnStatusText').text('离线');
+                }
+            }).fail(function() {
+                $('#sdnStatus').addClass('offline');
+                $('#sdnStatusText').text('连接失败');
+            });
+        }
+
+        function checkAIStatus() {
+            $.get('/api/ai/config', function(data) {
+                if (data.success && data.config.AI_API_KEY) {
+                    $('#aiStatus').addClass('online');
+                    $('#aiStatusText').text('已配置');
+                    $('#aiInfo').append('<p>模型: ' + data.config.AI_MODEL + '</p>');
+                } else {
+                    $('#aiStatus').addClass('offline');
+                    $('#aiStatusText').text('未配置');
+                }
+            }).fail(function() {
+                $('#aiStatus').addClass('offline');
+                $('#aiStatusText').text('检查失败');
+            });
+        }
+
+        function loadExecutionLogs() {
+            $.get('/api/ai/plan/logs', function(data) {
+                if (data.success && data.logs.length > 0) {
+                    let html = '';
+                    data.logs.slice(-5).reverse().forEach(function(log) {
+                        const time = new Date(log.timestamp).toLocaleString('zh-CN');
+                        const statusClass = log.failed > 0 ? 'text-danger' : 'text-success';
+                        html += '<div class="log-entry">';
+                        html += '<strong>' + time + '</strong> - ';
+                        html += '<span class="' + statusClass + '">成功: ' + log.executed + '</span>';
+                        if (log.failed > 0) {
+                            html += ', 失败: ' + log.failed;
+                        }
+                        html += ' - 总计: ' + log.total_operations + ' 个操作';
+                        html += '</div>';
+                    });
+                    $('#executionLogs').html(html || '<p class="text-muted">暂无执行记录</p>');
+                } else {
+                    $('#executionLogs').html('<p class="text-muted">暂无执行记录</p>');
+                }
+            });
+        }
+
+        function testTopology() {
+            addLog('测试网络拓扑查询...');
+            $.get('/api/sdn/topology', function(data) {
+                if (data.success) {
+                    addLog('✅ 网络拓扑查询成功: ' + data.switches.length + ' 台交换机, ' + Object.keys(data.hosts || {}).length + ' 台主机');
+                } else {
+                    addLog('❌ 网络拓扑查询失败: ' + data.message);
+                }
+            }).fail(function() {
+                addLog('❌ 网络拓扑查询失败');
+            });
+        }
+
+        function testAIChat() {
+            addLog('测试AI对话功能...');
+            $.post('/api/ai/chat', {message: '你好'}, function(data) {
+                if (data.success) {
+                    addLog('✅ AI对话成功: 收到 ' + data.reply.substring(0, 20) + '...');
+                } else {
+                    addLog('❌ AI对话失败: ' + data.error);
+                }
+            }).fail(function() {
+                addLog('❌ AI对话请求失败');
+            });
+        }
+
+        function testPlanGeneration() {
+            addLog('测试计划生成功能...');
+            $.post('/api/ai/plan', {prompt: '创建一个简单的检测计划'}, function(data) {
+                if (data.success) {
+                    addLog('✅ 计划生成成功');
+                } else {
+                    addLog('❌ 计划生成失败: ' + data.error);
+                }
+            }).fail(function() {
+                addLog('❌ 计划生成请求失败');
+            });
+        }
+
+        function testPlanExecution() {
+            addLog('测试计划执行功能...');
+            const testPlan = {
+                summary: '测试计划',
+                operations: [
+                    {type: 'create_detection_rule', name: '测试规则', threat_type: '测试威胁', severity: '低'}
+                ]
+            };
+
+            $.post('/api/ai/plan/execute', testPlan, function(data) {
+                if (data.success) {
+                    addLog('✅ 计划执行成功: ' + data.message);
+                } else {
+                    addLog('❌ 计划执行失败: ' + data.error);
+                }
+            }).fail(function() {
+                addLog('❌ 计划执行请求失败');
+            });
+        }
+
+        function addLog(message) {
+            const time = new Date().toLocaleTimeString('zh-CN');
+            const html = '<div class="log-entry">[' + time + '] ' + message + '</div>';
+            $('#realtimeLogs').prepend(html);
+        }
+
+        // 定期刷新状态
+        setInterval(function() {
+            // 只更新状态指示器，不刷新整个页面
+            // checkSDNStatus();
+            // checkAIStatus();
+        }, 30000);
+    </script>
+</body>
+</html>

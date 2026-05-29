@@ -1,0 +1,14 @@
+[
+  {
+    "alert_id": "ALERT-1776679262-6788",
+    "timestamp": "2026-04-20T18:01:02.089199",
+    "alert_type": "DDoS\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.215",
+    "dst_ip": "10.0.0.248",
+    "port": 28077,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230DDoS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  }
+]

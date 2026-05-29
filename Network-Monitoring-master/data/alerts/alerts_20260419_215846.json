@@ -1,0 +1,14 @@
+[
+  {
+    "alert_id": "ALERT-1776607109-3252",
+    "timestamp": "2026-04-19T21:58:29.770674",
+    "alert_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.201",
+    "dst_ip": "10.0.0.200",
+    "port": 50977,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "action_taken": "\u5df2\u963b\u6b62"
+  }
+]

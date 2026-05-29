@@ -3,36 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网络入侵检测与防御系统</title>
+    <title>入侵检测 - 网络入侵检测与防御系统</title>
+    {% import 'navbar.html' as navbar %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .navbar { position: relative !important; z-index: 1000 !important; }
+        .dropdown-menu { z-index: 1001 !important; }
+        #attackTypeChart {
+            max-height: 300px !important;
+            min-height: 250px !important;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fa fa-shield"></i> 网络入侵检测系统
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="切换导航">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">主页</a>
-                    </li>
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">仪表盘</a>
-                    </li> -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="/logs">日志</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    {{ navbar.render_navbar(active_page='intrusion_detection', current_user=current_user) }}
     <div class="container mt-4">
         <div class="row mb-4">
             <div class="col-md-12">
@@ -45,12 +32,16 @@
             <div class="col-md-12">
                 <div class="input-group">
                     <input type="text" class="form-control" id="filePath" placeholder="输入PCAP文件或CSV文件的绝对路径">
-                        <button id="analyze_file" class="btn btn-primary" >
-                        <i class="fa fa-upload"></i> 分析文件
+                    <button id="analyze_file" class="btn btn-primary">
+                        <i class="fa fa-file-code"></i> 分析文件
                     </button>
                 </div>
             <div class="form-text text-muted mt-2">支持格式：.pcap 网络抓包文件 / .csv 流量特征文件</div>
                 <div id="fileError" class="alert alert-danger mt-2" style="display: none;"></div>
+                <div id="successMessage" class="alert alert-success mt-2" style="display: none;"></div>
+                <div id="nextStepHint" class="alert alert-info mt-2" style="display: none;">
+                    <strong>下一步：</strong>请点击右侧的"开始检测"按钮进行威胁分析
+                </div>
             </div>
         </div>
         <div class="row mb-3">
@@ -108,8 +99,8 @@
                             </div>
                             <div class="ms-3">
                                 <h6 class="text-muted">威胁检测</h6>
-                                <button id="detectThreats" class="btn btn-info btn-sm">
-                                    <i class="fa fa-search"></i> 开始检测
+                                <button id="detectThreats" class="btn btn-info btn-sm" disabled>
+                                    <i class="fa fa-search"></i> 先分析文件
                                 </button>
                             </div>
                         </div>
@@ -194,10 +185,15 @@
     <script>
         // 仪表盘JavaScript文件
 
+        console.log('Script loaded, jQuery version:', $.fn.jquery);
+
         $(document).ready(function() {
+            console.log('Document ready');
+
             // 连接WebSocket
             const socket = io();
-            
+            console.log('Socket.IO initialized');
+
             // 图表对象
             let attackTypeChart = null;
                        
@@ -224,91 +220,158 @@
             setupSocketEvents();
             
               // 设置按钮事件
+
+            // 错误显示函数（移到外部）
+            function showError(message) {
+                const fileError = $('#fileError');
+                fileError.text(message).fadeIn();
+                setTimeout(() => fileError.fadeOut(), 8000);
+            }
+
+            // 成功消息函数
+            function showSuccess(message) {
+                const successMsg = $('#successMessage');
+                successMsg.html('<i class="fa fa-check-circle"></i> ' + message).fadeIn();
+                setTimeout(() => successMsg.fadeOut(), 8000);
+            }
+
+            // 显示下一步提示
+            function showNextStepHint() {
+                const hint = $('#nextStepHint');
+                hint.fadeIn();
+                setTimeout(() => hint.fadeOut(), 15000);
+            }
+
             // 分析文件
             $('#analyze_file').click(function() {
+                console.log('analyze_file button clicked');
                 const filePath = $('#filePath').val().trim();
-                const fileError = $('#fileError');
-                console.log("分析文件")
-                console.log(filePath);
-                fileError.hide();
-                if(is_run){
+                console.log("分析文件");
+                console.log("filePath:", filePath);
 
-                    showError('系统正在运行，无法分析文件');
-                    return;
-                }
                 if (!filePath) {
                     showError('请输入文件路径');
                     return;
                 }
 
+                // 禁用按钮，防止重复点击
+                const btn = $(this);
+                btn.prop('disabled', true);
+                btn.html('<i class="fa fa-spinner fa-spin"></i> 分析中...');
+
                 var postData = {
                     file_path: filePath
                 };
-                $.post('/api/analyze_file', postData,function(response) {
-                    console.log(response)
-                    if (response.success) {
-                        updateFlowFeatures(response.data);
-                        is_analyze=true;
-                         $('#detectThreats').removeClass('btn-danger').addClass('btn-info');
-                        $('#detectThreats').html('<i class="fa fa-search"></i> 开始检测');
-                    } else {
-                        showError('文件分析失败: ' + response.message);
-                        //is_analyze=false;
+                console.log('Sending request:', postData);
+
+                $.ajax({
+                    url: '/api/analyze_file',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(postData),
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response received:', response);
+                        if (response.success) {
+                            updateFlowFeatures(response.data);
+                            is_analyze = true;
+                            // 启用威胁检测按钮
+                            const detectBtn = $('#detectThreats');
+                            detectBtn.prop('disabled', false);
+                            detectBtn.removeClass('disabled btn-secondary').addClass('btn-info');
+                            detectBtn.html('<i class="fa fa-search"></i> 开始检测');
+                            detectBtn.css('opacity', '1');
+                            detectBtn.css('cursor', 'pointer');
+                            console.log('Button enabled, disabled prop:', detectBtn.prop('disabled'));
+
+                            const featureCount = response.data.features?.length || response.data.total_packets || 0;
+                            showSuccess('文件分析成功！共分析 ' + featureCount + ' 条记录');
+                            showNextStepHint();
+                            console.log('Analysis complete, is_analyze set to true');
+                        } else {
+                            showError('文件分析失败: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('请求失败:', xhr.status, xhr.responseText);
+                        showError('请求失败: ' + (xhr.responseJSON?.message || error || '网络错误'));
+                    },
+                    complete: function() {
+                        // 恢复按钮状态
+                        btn.prop('disabled', false);
+                        btn.html('<i class="fa fa-file-code"></i> 分析文件');
                     }
                 });
-
-                function showError(message) {
-                    //is_analyze=false;
-                    fileError.text(message).fadeIn();
-                    setTimeout(() => fileError.fadeOut(), 3000);
-                }
             });
+            console.log('analyze_file click handler registered');
             // 调用模型进行威胁检测
             $('#detectThreats').click(function() {
+                console.log('detectThreats button clicked');
                 const button = $(this);
                 const icon = button.find('i');
-                
+                console.log('is_analyze:', is_analyze);
+
                 if (is_analyze) {
                     // Start detection
                     button.removeClass('btn-info').addClass('btn-danger');
-                    button.html('<i class="fa fa-stop"></i> 重新检测');
-                    
+                    button.html('<i class="fa fa-spinner fa-spin"></i> 检测中...');
+                    console.log('Calling /api/start_threatdetection');
+
                     // Call API to start detection
                     $.get('/api/start_threatdetection', function(response) {
+                        console.log('Threat detection response:', response);
                         if (!response.success) {
-                            alert('启动检测失败: ' + response.message);
+                            showError('启动检测失败: ' + response.message);
                             button.removeClass('btn-danger').addClass('btn-info');
                             button.html('<i class="fa fa-search"></i> 开始检测');
                         }
                         else{
-                            console.log("威胁检测完")
+                            console.log("威胁检测完成")
                             console.log(response.data)
-                            if (response.data) {
+                            if (response.data && response.data.threats) {
                                 updateThreatList(response.data.threats);
                                 updateAttackChart({ attack_stats: countAttackTypes(response.data.threats) });
+                                showError('威胁检测完成！检测到 ' + response.data.threats.length + ' 条记录');
                             }
+                            button.removeClass('btn-danger').addClass('btn-info');
+                            button.html('<i class="fa fa-search"></i> 重新检测');
                         }
+                    }).fail(function(xhr) {
+                        console.error('威胁检测请求失败:', xhr.responseText);
+                        showError('威胁检测请求失败，请检查网络连接');
+                        button.removeClass('btn-danger').addClass('btn-info');
+                        button.html('<i class="fa fa-search"></i> 开始检测');
                     });
                 } else {
-                    alert('请先分析文件' );
+                    showError('请先分析文件');
                 }
             });
+            console.log('detectThreats click handler registered');
 
             
             // 初始化图表
             function initCharts() {
-                
+                console.log('initCharts called');
+
                 // 攻击类型图表
-                const attackCtx = document.getElementById('attackTypeChart').getContext('2d');
-                attackTypeChart = new Chart(attackCtx, {
+                const attackCanvas = document.getElementById('attackTypeChart');
+                if (!attackCanvas) {
+                    console.error('attackTypeChart canvas not found!');
+                    return;
+                }
+
+                console.log('Chart.js version:', Chart.version);
+                const ctx = attackCanvas.getContext('2d');
+
+                attackTypeChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: [],
                         datasets: [{
                             label: '攻击次数',
                             data: [],
-                            backgroundColor: 'rgba(217, 4, 41, 0.7)',
-                            borderColor: 'rgba(217, 4, 41, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 1
                         }]
                     },
@@ -318,23 +381,35 @@
                         scales: {
                             x: {
                                 grid: {
-                                    display: false
+                                    display: false,
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: {
+                                    color: '#ccc'
                                 }
                             },
                             y: {
                                 beginAtZero: true,
                                 grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: {
+                                    color: '#ccc',
+                                    stepSize: 1
                                 }
                             }
                         },
                         plugins: {
                             legend: {
                                 display: false
+                            },
+                            title: {
+                                display: false
                             }
                         }
                     }
                 });
+                console.log('Chart initialized successfully');
             }
             
             // 设置Socket事件
@@ -413,24 +488,33 @@
             
             
            function updateFlowFeatures(data) {
-                //console.log("更新流量特征");
-                //console.log(data);
-                if (!data.features) return;
+                console.log("更新流量特征", data);
+
+                if (!data || !data.features) {
+                    console.error('无效的数据格式:', data);
+                    showError('数据格式错误，请重试');
+                    return;
+                }
+
+                try {
                     // 流量统计
+                    const $flowfeatureBody = $('#flowfeature tbody');
 
-                const $flowfeatureBody = $('#flowfeature tbody');
+                    // 清空现有内容
+                    $flowfeatureBody.empty();
+                    features = data.features || [];
+                    $('#connectionsStat').text(features.length);
 
-                // 清空现有内容
-                $flowfeatureBody.empty();
-                features=data.features;
-                $('#connectionsStat').text(features.length);
-                // 计算总流量
-                let totalBytes = 0;
-                let maxDuration = 0;
-                features.forEach(feature => {
-                    totalBytes += parseInt(feature['Total Length of Fwd Packets']+feature['Total Length of Bwd Packets']);
-                    maxDuration = Math.max(maxDuration, parseFloat(feature['Flow Duration(ms)']));
-                    const row = `
+                    // 计算总流量
+                    let totalBytes = 0;
+                    let maxDuration = 0;
+                    features.forEach(feature => {
+                        const fwdLen = parseInt(feature['Total Length of Fwd Packets']) || 0;
+                        const bwdLen = parseInt(feature['Total Length of Bwd Packets']) || 0;
+                        totalBytes += fwdLen + bwdLen;
+                        maxDuration = Math.max(maxDuration, parseFloat(feature['Flow Duration(ms)']) || 0);
+
+                        const row = `
                         <tr>
                             <td>${feature['Src IP']}</td>
                             <td>${feature['Dst IP']}</td>
@@ -448,53 +532,78 @@
                             <td>${feature['ACK Count']}</td>
                         </tr>
                     `;
-                    $flowfeatureBody.append(row);
-                });
-                // 计算每秒流量 (bytes per second)
-                const trafficRate = (totalBytes / (maxDuration / 1000)).toFixed(2);
-                $('#trafficStat').text(formatBytes(trafficRate) + '/s');
-          }
+                        $flowfeatureBody.append(row);
+                    });
+                    // 计算每秒流量 (bytes per second)
+                    const trafficRate = (totalBytes / (maxDuration / 1000)).toFixed(2);
+                    $('#trafficStat').text(formatBytes(trafficRate) + '/s');
+                } catch (err) {
+                    console.error('updateFlowFeatures error:', err);
+                }
+            }
+
             // 更新攻击类型图表
             function updateAttackChart(data) {
-                if (!data.attack_stats) return;
-                
+                console.log('updateAttackChart called with:', data);
+                console.log('Chart object:', attackTypeChart);
+
+                if (!attackTypeChart) {
+                    console.error('attackTypeChart is not initialized!');
+                    return;
+                }
+
+                if (!data.attack_stats) {
+                    console.log('No attack_stats in data');
+                    return;
+                }
+
                 const attackTypes = Object.keys(data.attack_stats);
                 const counts = attackTypes.map(t => data.attack_stats[t]);
-                
+                console.log('Attack types:', attackTypes, 'Counts:', counts);
+
                 // 排序
                 const combined = attackTypes.map((type, i) => ({ type, count: counts[i] }));
                 combined.sort((a, b) => b.count - a.count);
-                
+
                 // 取前8种攻击类型
                 const topAttacks = combined.slice(0, 8);
-                
+                console.log('Top attacks:', topAttacks);
+
                 // 更新图表数据
-                attackTypeChart.data.labels = topAttacks.map(a => a.type);
-                attackTypeChart.data.datasets[0].data = topAttacks.map(a => a.count);
-                attackTypeChart.update();
+                try {
+                    attackTypeChart.data.labels = topAttacks.map(a => a.type);
+                    attackTypeChart.data.datasets[0].data = topAttacks.map(a => a.count);
+                    attackTypeChart.update();
+                    console.log('Chart updated successfully');
+                } catch (err) {
+                    console.error('Error updating chart:', err);
+                }
             }
             
             
             
             // 更新威胁列表
             function updateThreatList(threats) {
-                //console.log(threats)
-                if (!Array.isArray(threats)) return;
-                //console.log(threats)
+                console.log('updateThreatList called with:', threats);
+                if (!Array.isArray(threats)) {
+                    console.log('threats is not an array:', threats);
+                    return;
+                }
+                console.log('Processing', threats.length, 'threats');
                 // 保存威胁数据
                 threatList = threats;
-                
+
                 // 生成HTML
                 let threatHtml = '';
-                
+
                 // 最多显示5条最新的威胁
                 //const latestThreats = threats.slice(0, 5);
-                
+
                 threats.forEach(threat => {
                     //const time = new Date(threat.timestamp).toLocaleString();
                     const severity = threat.severity || '未知';
                     const severityClass = severity === '高' ? 'high' : (severity === '中' ? 'medium' : 'low');
-                    
+
                     threatHtml += `<div class="threat-item">
                         <div class="d-flex justify-content-between">
                             <span>
@@ -507,14 +616,14 @@
                         </div>
                     </div>`;
                 });
-                
+
                 if (threatHtml === '') {
                     threatHtml = '<div class="text-center text-muted p-3">无威胁记录</div>';
                 }
-                
+
                 // 更新DOM
                 $('#threatList').html(threatHtml);
-
+                console.log('Threat list updated, HTML length:', threatHtml.length);
             }
             
             
@@ -523,6 +632,7 @@
             
             // 计算攻击类型统计
             function countAttackTypes(threats) {
+                console.log('countAttackTypes called with:', threats.length, 'threats');
                 const counts = {};
                 var total=0;
                 threats.forEach(threat => {
@@ -534,21 +644,31 @@
                     counts[type]++;
                 });
                 $('#threatsStat').text(total)
+                console.log('Attack types counted:', counts, 'Total threats:', total);
                 return counts;
             }
             
             // 格式化字节数
             function formatBytes(bytes, decimals = 2) {
                 if (bytes === 0) return '0 B';
-                
+
                 const k = 1024;
                 const dm = decimals < 0 ? 0 : decimals;
                 const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                
+
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
-                
+
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
             }
+
+            // 调试函数：手动触发威胁检测（可在浏览器控制台调用）
+            window.debugTriggerDetection = function() {
+                console.log('Manually triggering threat detection...');
+                is_analyze = true;  // 强制设置为true
+                $('#detectThreats').click();
+            };
+
+            console.log('Debug function available: debugTriggerDetection()');
         });
 
     </script>

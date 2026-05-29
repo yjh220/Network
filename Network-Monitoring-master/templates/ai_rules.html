@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 规则生成 - 网络入侵检测与防御系统</title>
+    {% import 'navbar.html' as navbar %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {{ navbar.render_navbar(active_page='ai_rules', current_user=None) }}
+
+    <!-- AI模块导航 -->
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <span class="me-3"><strong>AI智能体模块:</strong></span>
+                            <a href="/ai/copilot" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fa fa-robot"></i> AI安全助手
+                            </a>
+                            <a href="/ai/planner" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fa fa-calendar-check-o"></i> AI检测计划
+                            </a>
+                            <a href="/ai/rules" class="btn btn-sm btn-primary">
+                                <i class="fa fa-magic"></i> AI规则生成
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fa fa-code"></i> AI 规则生成器</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="ruleTabs" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#generate-tab">
+                                    生成规则
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#fix-tab">
+                                    修复规则
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content mt-3" id="ruleTabContent">
+                            <!-- Generate Tab -->
+                            <div class="tab-pane fade show active" id="generate-tab">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">规则类型</label>
+                                            <select class="form-select" id="ruleType">
+                                                <option value="detection">检测规则</option>
+                                                <option value="prevention">防御规则</option>
+                                                <option value="alert">告警规则</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">规则描述</label>
+                                            <textarea class="form-control" id="rulePrompt" rows="5"
+                                                      placeholder="描述你想要生成的规则，例如：检测SSH暴力破解攻击，同一IP在一分钟内连接尝试超过10次"></textarea>
+                                        </div>
+                                        <button class="btn btn-primary" onclick="generateRule()">
+                                            <i class="fa fa-magic"></i> 生成规则
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6>生成结果</h6>
+                                                <pre id="ruleResult" class="bg-white p-3 border"
+                                                     style="min-height:200px;max-height:400px;overflow:auto;">
+规则生成结果将显示在这里...
+                                                </pre>
+                                                <div class="mt-2">
+                                                    <button class="btn btn-sm btn-success" onclick="saveRule()">
+                                                        <i class="fa fa-save"></i> 保存规则
+                                                    </button>
+                                                    <button class="btn btn-sm btn-warning ms-2" onclick="showRuleHistory()">
+                                                        <i class="fa fa-history"></i> 查看历史
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger ms-2" onclick="rollbackLastRule()" id="rollbackRuleBtn" style="display:none;">
+                                                        <i class="fa fa-undo"></i> 撤回上一个
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fix Tab -->
+                            <div class="tab-pane fade" id="fix-tab">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">有问题的规则</label>
+                                            <textarea class="form-control" id="brokenRule" rows="6"
+                                                      placeholder='{"name": "SSH检测", "threshold": "invalid"}'></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">错误信息</label>
+                                            <textarea class="form-control" id="ruleError" rows="3"
+                                                      placeholder="错误消息..."></textarea>
+                                        </div>
+                                        <button class="btn btn-warning" onclick="fixRule()">
+                                            <i class="fa fa-wrench"></i> 修复规则
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6>诊断结果</h6>
+                                                <div id="fixResult"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fa fa-lightbulb"></i> 规则生成示例</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <strong>检测规则</strong>
+                                        <p class="small text-muted mb-1">检测SSH暴力破解攻击</p>
+                                        <code class="small">同一IP一分钟内SSH连接超过10次</code>
+                                        <button class="btn btn-sm btn-link" onclick="loadExample('detection')">
+                                            使用此例
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <strong>防御规则</strong>
+                                        <p class="small text-muted mb-1">阻止DDoS攻击源IP</p>
+                                        <code class="small">检测到高流量DDoS时自动封锁源IP</code>
+                                        <button class="btn btn-sm btn-link" onclick="loadExample('prevention')">
+                                            使用此例
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <strong>告警规则</strong>
+                                        <p class="small text-muted mb-1">高危威胁告警</p>
+                                        <code class="small">检测到高危威胁时发送邮件通知</code>
+                                        <button class="btn btn-sm btn-link" onclick="loadExample('alert')">
+                                            使用此例
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-dark text-white">
+        <div class="container text-center">
+            <p>&copy; 2025 网络入侵检测与防御系统 | AI 智能体模块</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentRule = null;
+
+        function generateRule() {
+            const prompt = document.getElementById('rulePrompt').value.trim();
+            const ruleType = document.getElementById('ruleType').value;
+
+            if (!prompt) {
+                alert('请描述规则需求');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
+
+            fetch('/api/ai/rules/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: prompt, rule_type: ruleType})
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 生成规则';
+
+                if (data.success) {
+                    currentRule = data.rule;
+                    document.getElementById('ruleResult').textContent =
+                        JSON.stringify(data.rule, null, 2);
+                } else {
+                    alert('生成失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 生成规则';
+                alert('请求失败: ' + error);
+            });
+        }
+
+        function fixRule() {
+            const ruleText = document.getElementById('brokenRule').value.trim();
+            const error = document.getElementById('ruleError').value.trim();
+
+            if (!ruleText || !error) {
+                alert('请提供规则和错误信息');
+                return;
+            }
+
+            let rule;
+            try {
+                rule = JSON.parse(ruleText);
+            } catch(e) {
+                alert('规则格式错误，请提供有效的JSON');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 分析中...';
+
+            fetch('/api/ai/rules/fix', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rule: rule, error: error, context: {}})
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-wrench"></i> 修复规则';
+
+                if (data.success) {
+                    const diag = data.diagnosis;
+                    let html = `
+                        <p><strong>诊断:</strong> ${diag.diagnosis}</p>
+                        <p><strong>根本原因:</strong> ${diag.root_cause}</p>
+                        <p><strong>可自动修复:</strong> ${diag.can_auto_fix ? '是' : '否'}</p>
+                    `;
+                    if (diag.can_auto_fix && diag.fixed_rule) {
+                        html += `<h6>修复后的规则:</h6>
+                                <pre class="bg-white p-2 border">${JSON.stringify(diag.fixed_rule, null, 2)}</pre>`;
+                    }
+                    if (diag.explanation) {
+                        html += `<p><strong>说明:</strong> ${diag.explanation}</p>`;
+                    }
+                    document.getElementById('fixResult').innerHTML = html;
+                } else {
+                    alert('诊断失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-wrench"></i> 修复规则';
+                alert('请求失败: ' + error);
+            });
+        }
+
+        function saveRule() {
+            if (!currentRule) {
+                alert('没有可保存的规则');
+                return;
+            }
+            alert('规则保存功能开发中...');
+        }
+
+        function loadExample(type) {
+            const examples = {
+                detection: '检测SSH暴力破解攻击，同一IP在一分钟内SSH连接尝试超过10次',
+                prevention: '检测到DDoS攻击时，自动封锁源IP地址，持续时间为1小时',
+                alert: '当检测到高危威胁（如DDoS、SQL注入）时，发送邮件通知管理员'
+            };
+            document.getElementById('rulePrompt').value = examples[type] || '';
+            document.getElementById('ruleType').value = type;
+        }
+
+        // 保存规则
+        function saveRule() {
+            if (!currentRule) {
+                alert('没有可保存的规则，请先生成规则');
+                return;
+            }
+
+            // 发送保存请求
+            fetch('/api/ai/rules/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rule: currentRule})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('规则保存成功！');
+                    // 显示撤回按钮
+                    document.getElementById('rollbackRuleBtn').style.display = 'inline-block';
+                    // 保存execution_id用于撤回
+                    if (data.execution_id) {
+                        window.currentRuleExecutionId = data.execution_id;
+                    }
+                } else {
+                    alert('保存失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('保存规则错误:', error);
+                alert('保存失败: ' + error);
+            });
+        }
+
+        // 显示规则历史
+        function showRuleHistory() {
+            fetch('/api/ai/rules/history')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.rules.length > 0) {
+                        let html = '<div class="list-group">';
+                        data.rules.forEach((rule, index) => {
+                            const time = new Date(rule.timestamp).toLocaleString('zh-CN');
+                            html += `
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">${rule.name || '规则 #' + (index + 1)}</h6>
+                                            <small class="text-muted">${time}</small>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteRule('${rule.id || rule.name}')">
+                                            <i class="fa fa-trash"></i> 删除
+                                        </button>
+                                    </div>
+                                    <pre class="mt-2 mb-0" style="font-size:12px;">${JSON.stringify(rule.rule, null, 2)}</pre>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+
+                        // 显示模态框
+                        const modalHtml = `
+                            <div class="modal fade" id="historyModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">规则历史记录</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            ${html}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // 移除旧的模态框
+                        const oldModal = document.getElementById('historyModal');
+                        if (oldModal) oldModal.remove();
+
+                        // 添加新的模态框
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+                        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+                        modal.show();
+                    } else {
+                        alert('暂无历史记录');
+                    }
+                })
+                .catch(error => {
+                    console.error('加载历史失败:', error);
+                    alert('加载历史失败: ' + error);
+                });
+        }
+
+        // 撤回上一个规则
+        function rollbackLastRule() {
+            if (!window.currentRuleExecutionId) {
+                alert('没有可撤回的规则');
+                return;
+            }
+
+            if (!confirm('确定要撤回保存的上一个规则吗？')) {
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 撤回中...';
+
+            fetch('/api/ai/rules/rollback', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({execution_id: window.currentRuleExecutionId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+
+                if (data.success) {
+                    alert('撤回成功！\n' + data.message);
+                    // 隐藏撤回按钮
+                    const rollbackBtn = document.getElementById('rollbackRuleBtn');
+                    if (rollbackBtn) {
+                        rollbackBtn.style.display = 'none';
+                        console.log('规则撤回按钮已隐藏');
+                    }
+                    window.currentRuleExecutionId = null;
+                    // 刷新历史记录
+                    showRuleHistory();
+                } else {
+                    alert('撤回失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                console.error('撤回错误:', error);
+                alert('撤回失败: ' + error);
+            });
+        }
+
+        // 删除规则
+        function deleteRule(ruleId) {
+            if (!confirm('确定要删除这个规则吗？')) {
+                return;
+            }
+
+            fetch('/api/ai/rules/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rule_id: ruleId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('删除成功！');
+                    // 刷新历史
+                    showRuleHistory();
+                } else {
+                    alert('删除失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('删除错误:', error);
+                alert('删除失败: ' + error);
+            });
+        }
+    </script>
+</body>
+</html>

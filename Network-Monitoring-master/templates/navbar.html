@@ -1,0 +1,114 @@
+{% macro render_navbar(active_page='', current_user=None) %}
+{% if current_user is none or not current_user.is_authenticated %}
+{% set current_user_is_authenticated = false %}
+{% set current_user_username = 'Guest' %}
+{% set current_user_is_admin = false %}
+{% else %}
+{% set current_user_is_authenticated = current_user.is_authenticated %}
+{% set current_user_username = current_user.username %}
+{# 检查是否是管理员 - 支持两种User模型 #}
+{% set current_user_is_admin = false %}
+{% if current_user.is_authenticated and current_user %}
+    {% if current_user.role is not none %}
+        {% if current_user.role is string %}
+            {# models.User: role是字符串 'admin' 或 'user' #}
+            {% set current_user_is_admin = current_user.role == 'admin' %}
+        {% elif current_user.role.name is defined %}
+            {# models_admin.User: role是关系对象 #}
+            {% set current_user_is_admin = current_user.role.name == 'admin' %}
+        {% endif %}
+    {% endif %}
+{% endif %}
+{% endif %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="position: relative !important; z-index: 1000 !important;">
+    <div class="container">
+        <a class="navbar-brand" href="/home">
+            <i class="fas fa-shield-alt"></i> 网络安全系统
+        </a>
+        <div class="ms-auto me-3 text-white d-none d-lg-block">
+            <i class="far fa-clock"></i> <span id="realtimeClock"></span>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'home' else '' }}" href="/home"><i class="fas fa-home"></i> 主页</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}" href="/dashboard"><i class="fas fa-tachometer-alt"></i> 仪表板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'network_monitor' else '' }}" href="/network_monitor"><i class="fas fa-network-wired"></i> 网络监控</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'intrusion_detection' else '' }}" href="/intrusion_detection"><i class="fas fa-exclamation-triangle"></i> 入侵检测</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'honeypot' else '' }}" href="/honeypot"><i class="fas fa-shield-virus"></i> 蜜罐引流</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'logs' else '' }}" href="/logs"><i class="fas fa-list"></i> 日志</a>
+                </li>
+                {% if current_user_is_authenticated and current_user_is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'admin_users' else '' }}" href="/admin/users"><i class="fas fa-users-cog"></i> 用户管理</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/console"><i class="fas fa-cogs"></i> 后台管理</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% if current_user_is_authenticated %}
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> {{ current_user_username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1001 !important;">
+                        <li><span class="dropdown-item-text">
+                            <small class="text-muted">角色: {{ '管理员' if current_user_is_admin else '普通用户' }}</small>
+                        </span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item {{ 'active' if active_page == 'settings' else '' }}" href="{{ url_for('settings') }}"><i class="fas fa-cog"></i> 设置</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> 退出</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> 登录</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> 注册</a>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+<script>
+function updateClock() {
+    const now = new Date();
+    const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+    const timeString = now.toLocaleString('zh-CN', options);
+    const clockElement = document.getElementById('realtimeClock');
+    if (clockElement) {
+        clockElement.textContent = timeString;
+    }
+}
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+{% endmacro %}

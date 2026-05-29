@@ -65,6 +65,14 @@ def logs():
 def settings():
     return render_template('settings.html')
 
+@app.route('/network_monitor')
+def network_monitor():
+    return render_template('network_monitor.html')
+
+@app.route('/intrusion_detection')
+def intrusion_detection():
+    return render_template('intrusion_detection.html')
+
 # API路由
 @app.route('/api/status')
 def get_status():

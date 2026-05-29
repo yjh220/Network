@@ -1,0 +1,54 @@
+[
+  {
+    "threat_id": "THREAT-1776526197-8021",
+    "timestamp": "2026-04-18T23:29:57.565824",
+    "threat_type": "\u66b4\u529b\u7834\u89e3",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.248",
+    "dst_ip": "10.0.0.254",
+    "port": 50831,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230\u66b4\u529b\u7834\u89e3\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776526227-7601",
+    "timestamp": "2026-04-18T23:30:27.713066",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4e2d",
+    "src_ip": "192.168.1.208",
+    "dst_ip": "10.0.0.117",
+    "port": 49930,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776526262-2291",
+    "timestamp": "2026-04-18T23:31:02.909468",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.246",
+    "dst_ip": "10.0.0.101",
+    "port": 16080,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776526278-4734",
+    "timestamp": "2026-04-18T23:31:18.020961",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.200",
+    "dst_ip": "10.0.0.183",
+    "port": 37654,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

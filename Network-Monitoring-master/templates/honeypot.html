@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜜罐引流系统 - 网络入侵检测与防御系统</title>
+    {% import 'navbar.html' as navbar %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <style>
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .navbar {
+            position: relative !important;
+            z-index: 1000 !important;
+        }
+        .dropdown-menu {
+            z-index: 1001 !important;
+        }
+        .hero-section {
+            padding: 3rem 0;
+            text-align: center;
+            color: white;
+        }
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: rgba(255,255,255,0.8);
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .stat-card.info {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .threat-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .threat-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .threat-item.honeypot {
+            border-left-color: #f5576c;
+            background: rgba(245, 87, 108, 0.05);
+        }
+        .threat-item.business {
+            border-left-color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+        .threat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .threat-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .threat-badge.honeypot {
+            background: rgba(245, 87, 108, 0.15);
+            color: #f5576c;
+        }
+        .threat-badge.business {
+            background: rgba(79, 172, 254, 0.15);
+            color: #4facfe;
+        }
+        .threat-ip {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .threat-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .threat-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .threat-type.port-scan {
+            background: rgba(245, 87, 108, 0.15);
+            color: #f5576c;
+        }
+        .threat-type.sql-injection {
+            background: rgba(254, 225, 64, 0.2);
+            color: #d4a017;
+        }
+        .threat-type.brute-force {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+        }
+        .threat-type.xss {
+            background: rgba(165, 94, 234, 0.15);
+            color: #a55eea;
+        }
+        .btn-custom {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-custom-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-custom-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        .btn-custom-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-custom-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+            color: white;
+        }
+        .node-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .node-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .node-status.online {
+            background: rgba(46, 213, 115, 0.15);
+            color: #2ed573;
+        }
+        .node-status.offline {
+            background: rgba(255, 71, 87, 0.15);
+            color: #ff4757;
+        }
+        .table-custom {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-custom thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+            height: 20px;
+            margin-bottom: 10px;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    {{ navbar.render_navbar(active_page='honeypot', current_user=current_user) }}
+
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="page-title">
+                <i class="fas fa-shield-virus"></i> 蜜罐引流系统
+            </h1>
+            <p class="page-subtitle">威胁监控与智能引流管理平台</p>
+        </div>
+    </div>
+
+    <div class="container" style="padding-bottom: 50px;">
+        <!-- 统计卡片 -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card danger">
+                    <div class="stat-icon"><i class="fas fa-bug"></i></div>
+                    <div class="stat-number" id="captureCount">0</div>
+                    <div class="stat-label">今日捕获攻击</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card success">
+                    <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="stat-number" id="attackIPCount">0</div>
+                    <div class="stat-label">攻击IP数量</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card warning">
+                    <div class="stat-icon"><i class="fas fa-network-wired"></i></div>
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">蜜罐节点</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card info">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">攻击类型</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="content-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <button class="btn btn-custom btn-custom-primary w-100" onclick="showSection('monitor')">
+                        <i class="fas fa-chart-line me-2"></i>监控面板
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-custom btn-custom-primary w-100" onclick="showSection('nodes')">
+                        <i class="fas fa-server me-2"></i>蜜罐节点
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-custom btn-custom-primary w-100" onclick="showSection('rules')">
+                        <i class="fas fa-route me-2"></i>引流规则
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-custom btn-custom-primary w-100" onclick="showSection('records')">
+                        <i class="fas fa-file-alt me-2"></i>攻击记录
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 监控面板 -->
+        <div id="monitorSection">
+            <div class="content-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-list-ul me-2"></i>实时威胁监控</h2>
+                    <span class="badge bg-success">实时更新中</span>
+                </div>
+                <div id="threatList">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-3 text-muted">正在加载威胁数据...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 蜜罐节点 -->
+        <div id="nodesSection" style="display: none;">
+            <div class="content-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-server me-2"></i>蜜罐节点管理</h2>
+                    <button class="btn btn-custom btn-custom-primary" onclick="addHoneypotNode()">
+                        <i class="fas fa-plus me-2"></i>新增节点
+                    </button>
+                </div>
+                <div id="nodesList">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-3 text-muted">正在加载节点数据...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 引流规则 -->
+        <div id="rulesSection" style="display: none;">
+            <div class="content-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-route me-2"></i>引流规则配置</h2>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">引流IP列表（黑名单）</label>
+                            <textarea class="form-control" rows="6" id="blacklistIps">192.168.1.100
+10.0.0.0/24
+172.16.0.0/16</textarea>
+                            <small class="text-muted">每行一个IP或IP段</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">引流比例</label>
+                            <input type="range" class="form-range" min="10" max="100" value="100" id="redirectRatio" oninput="document.getElementById('ratioDisplay').textContent = this.value + '%'">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">10%</span>
+                                <span id="ratioDisplay" class="fw-bold" style="color: #667eea;">100%</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">将匹配流量按比例引流到蜜罐</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">触发条件</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="portScan" checked>
+                                <label class="form-check-label">端口扫描行为</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="abnormalTraffic" checked>
+                                <label class="form-check-label">异常流量模式</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="suspiciousIP" checked>
+                                <label class="form-check-label">可疑IP访问</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-custom btn-custom-primary" onclick="saveRules()">
+                        <i class="fas fa-save me-2"></i>保存配置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 攻击记录 -->
+        <div id="recordsSection" style="display: none;">
+            <div class="content-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-file-alt me-2"></i>攻击捕获记录</h2>
+                    <button class="btn btn-custom btn-custom-primary" onclick="exportRecords()">
+                        <i class="fas fa-download me-2"></i>导出记录
+                    </button>
+                </div>
+                <div class="table-custom">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>攻击源IP</th>
+                                    <th>攻击类型</th>
+                                    <th>来源</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTable">
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SDN智能体聊天机器人 -->
+    {% include 'admin/intent_chatbot.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 粒子背景
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.8;
+                this.speedX = (Math.random() - 0.5) * 0.6;
+                this.speedY = (Math.random() - 0.5) * 0.6;
+                this.opacity = Math.random() * 0.6 + 0.3;
+                this.pulseSpeed = Math.random() * 0.02 + 0.01;
+                this.pulseOffset = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                const pulse = Math.sin(Date.now() * this.pulseSpeed + this.pulseOffset) * 0.2 + 0.8;
+                const currentOpacity = this.opacity * pulse;
+                ctx.fillStyle = `rgba(96, 165, 250, ${currentOpacity})`;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(59, 130, 246, 0.9)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(250, Math.floor(canvas.width * canvas.height / 4000));
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 130) {
+                        const opacity = 0.2 * (1 - distance / 130);
+                        ctx.strokeStyle = `rgba(96, 165, 250, ${opacity})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+
+        resizeCanvas();
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+
+        // 蜜罐数据
+        let honeypotNodes = [
+            { id: 1, name: 'HTTP蜜罐-1', type: 'HTTP', ip: '0.0.0.0', port: 8081, status: 'online', attacks: 125 },
+            { id: 2, name: 'SSH蜜罐-1', type: 'SSH', ip: '0.0.0.0', port: 2222, status: 'online', attacks: 89 },
+            { id: 3, name: 'MySQL蜜罐-1', type: 'MySQL', ip: '0.0.0.0', port: 3307, status: 'online', attacks: 33 },
+            { id: 4, name: 'Redis蜜罐-1', type: 'Redis', ip: '0.0.0.0', port: 6380, status: 'online', attacks: 56 }
+        ];
+
+        let threatData = [
+            { id: 1, ip: '192.168.1.100', type: '端口扫描', typeName: 'port-scan', source: 'honeypot', time: '14:23:45', location: '中国 北京' },
+            { id: 2, ip: '10.0.0.50', type: 'SQL注入', typeName: 'sql-injection', source: 'business', time: '14:21:32', location: '中国 上海' },
+            { id: 3, ip: '172.16.0.25', type: '暴力破解', typeName: 'brute-force', source: 'honeypot', time: '14:18:56', location: '美国 纽约' },
+            { id: 4, ip: '192.168.2.150', type: 'XSS攻击', typeName: 'xss', source: 'honeypot', time: '14:15:23', location: '俄罗斯 莫斯科' },
+            { id: 5, ip: '10.0.1.75', type: '端口扫描', typeName: 'port-scan', source: 'business', time: '14:12:11', location: '德国 柏林' },
+            { id: 6, ip: '172.20.0.88', type: 'SQL注入', typeName: 'sql-injection', source: 'honeypot', time: '14:08:44', location: '英国 伦敦' },
+            { id: 7, ip: '192.168.3.200', type: '暴力破解', typeName: 'brute-force', source: 'honeypot', time: '14:05:19', location: '法国 巴黎' },
+            { id: 8, ip: '10.0.2.99', type: 'XSS攻击', typeName: 'xss', source: 'honeypot', time: '14:01:33', location: '日本 东京' }
+        ];
+
+        let blacklistedIPs = new Set();
+
+        // 面板切换
+        function showSection(section) {
+            const sections = ['monitor', 'nodes', 'rules', 'records'];
+            sections.forEach(s => {
+                document.getElementById(s + 'Section').style.display = 'none';
+            });
+            document.getElementById(section + 'Section').style.display = 'block';
+
+            if (section === 'nodes') {
+                renderNodes();
+            } else if (section === 'records') {
+                renderRecords();
+            }
+        }
+
+        // 渲染威胁列表
+        function renderThreatList() {
+            const container = document.getElementById('threatList');
+            if (!container) return;
+
+            container.innerHTML = threatData.slice(0, 8).map(threat => `
+                <div class="threat-item ${threat.source}">
+                    <div class="threat-header">
+                        <span class="threat-badge ${threat.source}">
+                            ${threat.source === 'honeypot' ? '来自蜜罐' : '真实业务'}
+                        </span>
+                        <small class="text-muted">
+                            <i class="far fa-clock me-1"></i>${threat.time}
+                        </small>
+                    </div>
+                    <div class="threat-ip">
+                        <i class="fas fa-network-wired me-2"></i>${threat.ip}
+                    </div>
+                    <div class="threat-details">
+                        <i class="fas fa-map-marker-alt me-1"></i>${threat.location}
+                        <span class="threat-type ${threat.typeName}">${threat.type}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染节点列表
+        function renderNodes() {
+            const container = document.getElementById('nodesList');
+            if (!container) return;
+
+            container.innerHTML = honeypotNodes.map(node => `
+                <div class="node-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="fas fa-server me-2"></i>${node.name}
+                            </h5>
+                            <small class="text-muted">${node.type} | ${node.ip}:${node.port}</small>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="node-status ${node.status}">
+                                ${node.status === 'online' ? '运行中' : '已停止'}
+                            </span>
+                            <button class="btn ${node.status === 'online' ? 'btn-danger' : 'btn-primary'} btn-sm"
+                                    onclick="toggleNode(${node.id})">
+                                ${node.status === 'online' ? '停止' : '启动'}
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>已捕获攻击: ${node.attacks} 次
+                    </small>
+                </div>
+            `).join('');
+        }
+
+        // 渲染攻击记录
+        function renderRecords() {
+            const container = document.getElementById('recordsTable');
+            if (!container) return;
+
+            container.innerHTML = threatData.map(record => `
+                <tr>
+                    <td><code>${record.ip}</code></td>
+                    <td><span class="threat-type ${record.typeName}">${record.type}</span></td>
+                    <td>
+                        <span class="threat-badge ${record.source}">
+                            ${record.source === 'honeypot' ? '蜜罐' : '业务'}
+                        </span>
+                    </td>
+                    <td>${record.time}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm"
+                                onclick="blockIP('${record.ip}', this)"
+                                ${blacklistedIPs.has(record.ip) ? 'disabled' : ''}>
+                            ${blacklistedIPs.has(record.ip) ? '已拉黑' : '拉黑'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 操作函数
+        function addHoneypotNode() {
+            const name = prompt('请输入蜜罐节点名称：');
+            if (!name) return;
+
+            const type = prompt('请输入类型 (HTTP/SSH/MySQL/Redis)：') || 'HTTP';
+            const port = prompt('请输入端口号：') || '8080';
+
+            honeypotNodes.push({
+                id: Date.now(),
+                name,
+                type,
+                ip: '0.0.0.0',
+                port: parseInt(port),
+                status: 'online',
+                attacks: 0
+            });
+
+            renderNodes();
+            alert('蜜罐节点已添加');
+        }
+
+        function toggleNode(id) {
+            const node = honeypotNodes.find(n => n.id === id);
+            if (node) {
+                node.status = node.status === 'online' ? 'offline' : 'online';
+                renderNodes();
+            }
+        }
+
+        function saveRules() {
+            alert('引流规则已保存');
+        }
+
+        function blockIP(ip, btn) {
+            blacklistedIPs.add(ip);
+            btn.disabled = true;
+            btn.textContent = '已拉黑';
+            alert(`已将IP ${ip} 加入黑名单`);
+        }
+
+        function exportRecords() {
+            const dataStr = JSON.stringify(threatData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'honeypot_records.json';
+            link.click();
+        }
+
+        // 模拟新攻击
+        function simulateNewAttack() {
+            const types = [
+                { type: '端口扫描', typeName: 'port-scan' },
+                { type: 'SQL注入', typeName: 'sql-injection' },
+                { type: '暴力破解', typeName: 'brute-force' },
+                { type: 'XSS攻击', typeName: 'xss' }
+            ];
+            const locations = ['中国 北京', '美国 纽约', '俄罗斯 莫斯科', '英国 伦敦', '德国 柏林', '法国 巴黎', '日本 东京'];
+
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const newAttack = {
+                id: Date.now(),
+                ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+                type: randomType.type,
+                typeName: randomType.typeName,
+                source: Math.random() > 0.5 ? 'honeypot' : 'business',
+                time: new Date().toTimeString().slice(0, 8),
+                location: locations[Math.floor(Math.random() * locations.length)]
+            };
+
+            threatData.unshift(newAttack);
+            if (threatData.length > 20) {
+                threatData.pop();
+            }
+
+            // 更新统计
+            const captureEl = document.getElementById('captureCount');
+            const attackIPEl = document.getElementById('attackIPCount');
+            if (captureEl) {
+                captureEl.textContent = parseInt(captureEl.textContent) + 1;
+            }
+            if (attackIPEl) {
+                const uniqueIPs = new Set(threatData.map(t => t.ip));
+                attackIPEl.textContent = uniqueIPs.size;
+            }
+
+            // 更新显示
+            renderThreatList();
+            renderRecords();
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化统计
+            document.getElementById('captureCount').textContent = threatData.length;
+            const uniqueIPs = new Set(threatData.map(t => t.ip));
+            document.getElementById('attackIPCount').textContent = uniqueIPs.size;
+
+            // 渲染数据
+            renderThreatList();
+            renderNodes();
+            renderRecords();
+
+            // 每10秒模拟新攻击
+            setInterval(simulateNewAttack, 10000);
+        });
+    </script>
+</body>
+</html>

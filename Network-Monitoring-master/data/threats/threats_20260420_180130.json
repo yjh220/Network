@@ -1,0 +1,28 @@
+[
+  {
+    "threat_id": "THREAT-1776679250-2103",
+    "timestamp": "2026-04-20T18:00:50.864005",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.166",
+    "dst_ip": "10.0.0.245",
+    "port": 15939,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776679275-2747",
+    "timestamp": "2026-04-20T18:01:15.987034",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.101",
+    "dst_ip": "10.0.0.183",
+    "port": 43619,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

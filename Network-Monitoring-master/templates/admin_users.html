@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 网络入侵检测与防御系统</title>
+    {% import 'navbar.html' as navbar %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+</head>
+<body>
+    {{ navbar.render_navbar(active_page='admin_users', current_user=current_user) }}
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-users-cog"></i> 用户管理</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="fas fa-user-plus"></i> 创建用户
+            </button>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>注册时间</th>
+                                <th>最后登录</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- 用户数据将通过JavaScript加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建用户模态框 -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">创建新用户</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createUserForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newUsername" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="newUsername" required
+                                   pattern="[a-zA-Z0-9_]{3,20}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEmail" class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="newEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">密码</label>
+                            <input type="password" class="form-control" id="newPassword" required
+                                   pattern=".{6,}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">角色</label>
+                            <select class="form-select" id="newRole" required>
+                                <option value="user">普通用户</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">创建</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const data = await response.json();
+
+                if (data.success) {
+                    const tbody = document.getElementById('usersTable');
+                    tbody.innerHTML = '';
+
+                    data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <span class="badge bg-${user.role === 'admin' ? 'primary' : 'secondary'}">
+                                    ${user.role === 'admin' ? '管理员' : '普通用户'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-${user.is_active ? 'success' : 'danger'}">
+                                    ${user.is_active ? '激活' : '禁用'}
+                                </span>
+                            </td>
+                            <td>${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</td>
+                            <td>${user.last_login ? new Date(user.last_login).toLocaleString() : '-'}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="toggleRole(${user.id})" ${user.id === {{ current_user.id }} ? 'disabled' : ''}>
+                                        <i class="fas fa-exchange-alt"></i> 切换角色
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="toggleActive(${user.id})" ${user.id === {{ current_user.id }} ? 'disabled' : ''}>
+                                        <i class="fas fa-power-off"></i> ${user.is_active ? '禁用' : '激活'}
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteUser(${user.id})" ${user.id === {{ current_user.id }} ? 'disabled' : ''}>
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('加载用户列表失败:', error);
+            }
+        }
+
+        // 切换用户角色
+        async function toggleRole(userId) {
+            if (!confirm('确定要切换该用户的角色吗？')) return;
+
+            try {
+                const response = await fetch(`/api/admin/update_role`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('操作失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('操作失败: ' + error);
+            }
+        }
+
+        // 切换用户状态
+        async function toggleActive(userId) {
+            try {
+                const response = await fetch(`/api/admin/toggle_active`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('操作失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('操作失败: ' + error);
+            }
+        }
+
+        // 删除用户
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？此操作不可恢复！')) return;
+
+            try {
+                const response = await fetch(`/api/admin/delete_user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('操作失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('操作失败: ' + error);
+            }
+        }
+
+        // 创建用户
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const userData = {
+                username: document.getElementById('newUsername').value,
+                email: document.getElementById('newEmail').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value
+            };
+
+            try {
+                const response = await fetch('/api/admin/create_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
+                    location.reload();
+                } else {
+                    alert('创建失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('创建失败: ' + error);
+            }
+        });
+
+        // 页面加载时获取用户列表
+        loadUsers();
+    </script>
+</body>
+</html>

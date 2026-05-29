@@ -1,0 +1,568 @@
+{% extends "admin/base.html" %}
+
+{% block title %}防御管理 - IDS后台管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">防御管理</h2>
+        <button class="btn btn-primary" onclick="showBlockIPModal()">
+            <i class="bi bi-shield-lock me-2"></i>封禁IP
+        </button>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-2">活跃封禁</h6>
+                    <h3 class="mb-0" id="active-blocks-count">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-2">今日执行</h6>
+                    <h3 class="mb-0" id="today-executions-count">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-info">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-2">防御策略</h6>
+                    <h3 class="mb-0" id="policy-count">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-2">自动封禁</h6>
+                    <h3 class="mb-0" id="auto-blocks-count">-</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选项卡 -->
+    <ul class="nav nav-tabs mb-4" id="defenseTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="blocked-ips-tab" data-bs-toggle="tab" data-bs-target="#blocked-ips" type="button" role="tab">
+                <i class="bi bi-shield-x me-2"></i>IP封禁管理
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="policies-tab" data-bs-toggle="tab" data-bs-target="#policies" type="button" role="tab">
+                <i class="bi bi-shield-check me-2"></i>防御策略
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="execution-logs-tab" data-bs-toggle="tab" data-bs-target="#execution-logs" type="button" role="tab">
+                <i class="bi bi-clock-history me-2"></i>执行日志
+            </button>
+        </li>
+    </ul>
+
+    <!-- 选项卡内容 -->
+    <div class="tab-content" id="defenseTabsContent">
+        <!-- IP封禁管理 -->
+        <div class="tab-pane fade show active" id="blocked-ips" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">IP封禁列表</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="search-ip" placeholder="搜索IP地址">
+                                <button class="btn btn-outline-secondary" onclick="loadBlockedIPs()">搜索</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all-ips" onchange="toggleSelectAll('ips')"></th>
+                                    <th>IP地址</th>
+                                    <th>威胁类型</th>
+                                    <th>严重程度</th>
+                                    <th>封禁原因</th>
+                                    <th>封禁时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blocked-ips-table">
+                                <tr><td colspan="8" class="text-center">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="blocked-ips-pagination"></div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-danger btn-sm" onclick="batchUnblockIPs()">
+                        <i class="bi bi-unlock me-1"></i>批量解封
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 防御策略 -->
+        <div class="tab-pane fade" id="policies" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">防御策略列表</h5>
+                    <button class="btn btn-primary btn-sm" onclick="showCreatePolicyModal()">
+                        <i class="bi bi-plus me-1"></i>添加策略
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>策略名称</th>
+                                    <th>策略类型</th>
+                                    <th>触发条件</th>
+                                    <th>响应动作</th>
+                                    <th>严重程度</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="policies-table">
+                                <tr><td colspan="7" class="text-center">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 执行日志 -->
+        <div class="tab-pane fade" id="execution-logs" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">防御执行日志</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>操作类型</th>
+                                    <th>操作人</th>
+                                    <th>资源</th>
+                                    <th>详情</th>
+                                    <th>执行时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="execution-logs-table">
+                                <tr><td colspan="5" class="text-center">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="execution-logs-pagination"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 封禁IP模态框 -->
+<div class="modal fade" id="blockIPModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">封禁IP地址</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="block-ip-form">
+                    <div class="mb-3">
+                        <label class="form-label">IP地址 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="ip_address" placeholder="例如: 192.168.1.100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">威胁类型</label>
+                        <select class="form-select" name="threat_type">
+                            <option value="manual">手动封禁</option>
+                            <option value="ddos">DDoS攻击</option>
+                            <option value="port_scan">端口扫描</option>
+                            <option value="sql_injection">SQL注入</option>
+                            <option value="brute_force">暴力破解</option>
+                            <option value="xss">XSS攻击</option>
+                            <option value="malware">恶意软件</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">封禁原因</label>
+                        <textarea class="form-control" name="reason" rows="3" placeholder="请输入封禁原因"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="submitBlockIP()">确认封禁</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 创建策略模态框 -->
+<div class="modal fade" id="createPolicyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加防御策略</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-policy-form">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">策略名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">策略类型 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="policy_type" required>
+                                <option value="auto_block">自动封禁</option>
+                                <option value="rate_limit">限流</option>
+                                <option value="port_scan">端口扫描防护</option>
+                                <option value="alert">仅告警</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">响应动作 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="action" required>
+                                <option value="block">阻断</option>
+                                <option value="rate_limit">限流</option>
+                                <option value="alert">告警</option>
+                                <option value="log">记录</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">严重程度</label>
+                            <select class="form-select" name="severity">
+                                <option value="info">信息</option>
+                                <option value="low">低</option>
+                                <option value="medium" selected>中</option>
+                                <option value="high">高</option>
+                                <option value="critical">严重</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">触发条件 (JSON格式)</label>
+                        <textarea class="form-control font-monospace" name="condition" rows="4" placeholder='{"threat_count": 5, "time_window": 300}'></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">持续时间（秒）</label>
+                        <input type="number" class="form-control" name="duration" placeholder="例如: 3600 (1小时)">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitCreatePolicy()">添加策略</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+let currentTab = 'blocked-ips';
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadBlockedIPs();
+    loadPolicies();
+    loadExecutionLogs();
+
+    // 切换标签页时加载数据
+    document.querySelectorAll('#defenseTabs button').forEach(button => {
+        button.addEventListener('shown.bs.tab', function(event) {
+            currentTab = event.target.id.replace('-tab', '');
+            if (currentTab === 'blocked-ips') {
+                loadBlockedIPs();
+            } else if (currentTab === 'execution-logs') {
+                loadExecutionLogs();
+            }
+        });
+    });
+});
+
+// 加载统计数据
+function loadStats() {
+    apiRequest('/admin/api/defense/execution_stats', 'GET', function(response) {
+        if (response && response.success) {
+            document.getElementById('active-blocks-count').textContent = response.data.active_blocks || 0;
+            document.getElementById('today-executions-count').textContent = response.data.today_executions || 0;
+            document.getElementById('policy-count').textContent = response.data.policy_count || 0;
+            document.getElementById('auto-blocks-count').textContent = response.data.auto_blocks || 0;
+        }
+    });
+
+    apiRequest('/admin/api/defense/policies', 'GET', function(response) {
+        if (response && response.success) {
+            const policies = response.data || [];
+            document.getElementById('policy-count').textContent = policies.length;
+        }
+    });
+}
+
+// 加载封禁IP列表
+function loadBlockedIPs(page = 1) {
+    currentPage = page;
+    const search = document.getElementById('search-ip')?.value || '';
+
+    apiRequest(`/admin/api/defense/blocked_ips?page=${page}&per_page=20&ip_address=${search}`, 'GET', function(response) {
+        if (response && response.success) {
+            const ips = response.data.blocked_ips || [];
+            const total = response.data.total || 0;
+            renderBlockedIPs(ips);
+            renderPagination('blocked-ips-pagination', total, 20, page, 'loadBlockedIPs');
+        } else {
+            console.error('Failed to load blocked IPs:', response);
+            document.getElementById('blocked-ips-table').innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>';
+        }
+    });
+}
+
+// 渲染封禁IP列表
+function renderBlockedIPs(ips) {
+    const tbody = document.getElementById('blocked-ips-table');
+    if (!tbody) return;
+
+    if (!ips || ips.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = ips.map(ip => `
+        <tr>
+            <td><input type="checkbox" class="ip-checkbox" value="${ip.id}"></td>
+            <td><code>${ip.ip_address || 'N/A'}</code></td>
+            <td><span class="badge bg-secondary">IP封禁</span></td>
+            <td><span class="badge bg-warning">中危</span></td>
+            <td>${ip.reason || '-'}</td>
+            <td>${formatDateTime(ip.blocked_at)}</td>
+            <td>${ip.is_active ? '<span class="badge bg-danger">已封禁</span>' : '<span class="badge bg-success">已解封</span>'}</td>
+            <td>
+                ${ip.is_active ? `<button class="btn btn-sm btn-success" onclick="unblockIP(${ip.id}, '${ip.ip_address}')"><i class="bi bi-unlock"></i> 解封</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 封禁IP
+function showBlockIPModal() {
+    document.getElementById('block-ip-form').reset();
+    new bootstrap.Modal(document.getElementById('blockIPModal')).show();
+}
+
+function submitBlockIP() {
+    const form = document.getElementById('block-ip-form');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    apiRequest('/admin/api/defense/block_ip', 'POST', data, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            bootstrap.Modal.getInstance(document.getElementById('blockIPModal')).hide();
+            loadBlockedIPs(currentPage);
+            loadStats();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 解封IP
+function unblockIP(blockId, ipAddress) {
+    if (!confirm(`确认解封IP地址 ${ipAddress}？`)) return;
+
+    apiRequest(`/admin/api/defense/unblock_ip/${blockId}`, 'POST', JSON.stringify({ ip_address: ipAddress }), function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadBlockedIPs(currentPage);
+            loadStats();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 批量解封IP
+function batchUnblockIPs() {
+    const selectedIds = Array.from(document.querySelectorAll('.ip-checkbox:checked')).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+        showToast('warning', '请先选择要解封的IP');
+        return;
+    }
+
+    if (!confirm(`确认解封选中的 ${selectedIds.length} 个IP地址？`)) return;
+
+    apiRequest('/admin/api/defense/batch_unblock', 'POST', {block_ids: selectedIds}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadBlockedIPs(currentPage);
+            loadStats();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 加载防御策略
+function loadPolicies() {
+    apiRequest('/admin/api/defense/policies', 'GET', function(response) {
+        if (response && response.success) {
+            renderPolicies(response.data);
+        } else {
+            console.error('Failed to load policies:', response);
+            const tbody = document.getElementById('policies-table');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败</td></tr>';
+        }
+    });
+}
+
+// 渲染防御策略
+function renderPolicies(policies) {
+    const tbody = document.getElementById('policies-table');
+    if (!tbody) return;
+
+    if (!policies || policies.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = policies.map(policy => `
+        <tr>
+            <td>${policy.name || 'N/A'}</td>
+            <td><span class="badge bg-info">${getPolicyTypeLabel(policy.type)}</span></td>
+            <td><code class="small">${policy.trigger_condition || '-'}</code></td>
+            <td><span class="badge bg-primary">${policy.response_action || '-'}</span></td>
+            <td>${getSeverityBadge(policy.severity)}</td>
+            <td>${policy.is_enabled ? '<span class="badge bg-success">启用</span>' : '<span class="badge bg-secondary">禁用</span>'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="editPolicy(${policy.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deletePolicy(${policy.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 创建防御策略
+function showCreatePolicyModal() {
+    document.getElementById('create-policy-form').reset();
+    new bootstrap.Modal(document.getElementById('createPolicyModal')).show();
+}
+
+function submitCreatePolicy() {
+    const form = document.getElementById('create-policy-form');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    // 解析condition
+    try {
+        data.condition = JSON.parse(data.condition || '{}');
+    } catch (e) {
+        showToast('error', '触发条件格式错误，请使用正确的JSON格式');
+        return;
+    }
+
+    apiRequest('/admin/api/defense/policies', 'POST', data, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            bootstrap.Modal.getInstance(document.getElementById('createPolicyModal')).hide();
+            loadPolicies();
+            loadStats();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 删除策略
+function deletePolicy(policyId) {
+    if (!confirm('确认删除该策略？')) return;
+
+    apiRequest(`/admin/api/defense/policies/${policyId}`, 'DELETE', null, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadPolicies();
+            loadStats();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 编辑策略
+function editPolicy(policyId) {
+    // 简化版：直接显示提示
+    showToast('info', '编辑功能需要实现模态框，这里只做演示');
+}
+
+// 加载执行日志
+function loadExecutionLogs(page = 1) {
+    apiRequest(`/admin/api/defense/execution_logs?page=${page}&per_page=20`, 'GET', function(response) {
+        if (response && response.success) {
+            const logs = response.data.logs || [];
+            const total = response.data.total || 0;
+            renderExecutionLogs(logs);
+            renderPagination('execution-logs-pagination', total, 20, page, 'loadExecutionLogs');
+        } else {
+            console.error('Failed to load execution logs:', response);
+            const tbody = document.getElementById('execution-logs-table');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">加载失败</td></tr>';
+        }
+    });
+}
+
+// 渲染执行日志
+function renderExecutionLogs(logs) {
+    const tbody = document.getElementById('execution-logs-table');
+    if (!tbody) return;
+
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => `
+        <tr>
+            <td><span class="badge bg-secondary">${log.operation_type || 'N/A'}</span></td>
+            <td>${log.operator || '系统'}</td>
+            <td>${log.resource || '-'}</td>
+            <td><small class="text-muted">${log.details || '-'}</small></td>
+            <td>${formatDateTime(log.created_at)}</td>
+        </tr>
+    `).join('');
+}
+
+// 工具函数
+function getPolicyTypeLabel(type) {
+    const labels = {
+        'auto_block': '自动封禁',
+        'rate_limit': '限流',
+        'port_scan': '端口扫描防护',
+        'alert': '仅告警'
+    };
+    return labels[type] || type;
+}
+</script>
+{% endblock %}

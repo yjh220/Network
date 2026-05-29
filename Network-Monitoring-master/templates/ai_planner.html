@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 检测计划 - 网络入侵检测与防御系统</title>
+    {% import 'navbar.html' as navbar %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {{ navbar.render_navbar(active_page='ai_planner', current_user=None) }}
+
+    <!-- AI模块导航 -->
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <span class="me-3"><strong>AI智能体模块:</strong></span>
+                            <a href="/ai/copilot" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fa fa-robot"></i> AI安全助手
+                            </a>
+                            <a href="/ai/planner" class="btn btn-sm btn-primary me-2">
+                                <i class="fa fa-calendar-check-o"></i> AI检测计划
+                            </a>
+                            <a href="/ai/rules" class="btn btn-sm btn-outline-primary">
+                                <i class="fa fa-magic"></i> AI规则生成
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fa fa-calendar-check-o"></i> AI 检测计划生成</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">描述你的检测需求</label>
+                                    <textarea class="form-control" id="planPrompt" rows="6"
+                                              placeholder="例如：创建一个检测计划来监控端口扫描攻击，当检测到异常时发送告警并自动封锁源IP"></textarea>
+                                </div>
+                                <button class="btn btn-primary" onclick="generatePlan()">
+                                    <i class="fa fa-magic"></i> 生成检测计划
+                                </button>
+                                <button class="btn btn-outline-secondary ms-2" onclick="loadExample()">
+                                    <i class="fa fa-file-text"></i> 加载示例
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>提示</h6>
+                                        <ul class="small mb-0">
+                                            <li>描述你想要检测的威胁类型</li>
+                                            <li>说明检测到威胁后的响应动作</li>
+                                            <li>指定告警方式和通知渠道</li>
+                                            <li>设置监控模式和参数</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4" id="planResult" style="display:none;">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fa fa-list"></i> 生成的检测计划</h5>
+                        <div>
+                            <button class="btn btn-sm btn-success" onclick="executePlan()">
+                                <i class="fa fa-play"></i> 执行计划
+                            </button>
+                            <button class="btn btn-sm btn-warning ms-2" onclick="rollbackPlan()" id="rollbackBtn" style="display:none;">
+                                <i class="fa fa-undo"></i> 撤回操作
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6 id="planSummary"></h6>
+                        <div id="planOperations"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 执行历史和撤回 -->
+        <div class="row mt-4" id="historySection" style="display:none;">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fa fa-history"></i> 执行历史（可撤回）</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="executionHistory"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-dark text-white">
+        <div class="container text-center">
+            <p>&copy; 2025 网络入侵检测与防御系统 | AI 智能体模块</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function generatePlan() {
+            const prompt = document.getElementById('planPrompt').value.trim();
+            if (!prompt) {
+                alert('请描述你的检测需求');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
+
+            fetch('/api/ai/plan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: prompt, context: {}})
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 生成检测计划';
+
+                if (data.success) {
+                    displayPlan(data.plan);
+                } else {
+                    alert('生成失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 生成检测计划';
+                alert('请求失败: ' + error);
+            });
+        }
+
+        function displayPlan(plan) {
+            document.getElementById('planSummary').textContent = plan.summary;
+
+            let html = '<div class="list-group">';
+            plan.operations.forEach((op, index) => {
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">${index + 1}. ${op.type}</h6>
+                            <span class="badge bg-primary">${op.type}</span>
+                        </div>
+                        <pre class="mt-2 mb-0" style="font-size:12px;">${JSON.stringify(op, null, 2)}</pre>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            document.getElementById('planOperations').innerHTML = html;
+            document.getElementById('planResult').style.display = 'block';
+        }
+
+        function executePlan() {
+            const planSummary = document.getElementById('planSummary').textContent;
+            const planData = {
+                summary: planSummary,
+                operations: [],
+                timestamp: new Date().toISOString()
+            };
+
+            // 从页面收集计划数据
+            const operationItems = document.querySelectorAll('#planOperations .list-group-item');
+            operationItems.forEach((item, index) => {
+                try {
+                    const preElement = item.querySelector('pre');
+                    if (preElement) {
+                        planData.operations.push(JSON.parse(preElement.textContent));
+                    }
+                } catch (e) {
+                    console.error('解析操作失败:', e);
+                }
+            });
+
+            if (planData.operations.length === 0) {
+                alert('没有可执行的计划操作，请先生成计划');
+                return;
+            }
+
+            // 发送执行请求
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 执行中...';
+
+            console.log('执行计划:', planData);
+
+            fetch('/api/ai/plan/execute', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(planData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-play"></i> 执行计划';
+
+                console.log('执行响应:', data);
+
+                if (data.success) {
+                    alert('计划执行成功！\n' + data.message);
+
+                    // 保存execution_id用于撤回
+                    // 从响应中获取execution_id
+                    if (data.execution_id) {
+                        window.currentExecutionId = data.execution_id;
+                        console.log('设置当前执行ID:', window.currentExecutionId);
+                        showRollbackButton();
+                        loadExecutionHistory();
+                    } else {
+                        console.warn('响应中没有execution_id', data);
+                        // 尝试从history中获取最新的
+                        setTimeout(() => {
+                            loadExecutionHistory();
+                            // 从历史记录中获取最新的execution_id
+                            fetch('/api/ai/plan/history')
+                                .then(r => r.json())
+                                .then(historyData => {
+                                    if (historyData.success && historyData.executions.length > 0) {
+                                        const latest = historyData.executions[0];
+                                        if (latest.execution_id && latest.can_rollback) {
+                                            window.currentExecutionId = latest.execution_id;
+                                            console.log('从历史获取执行ID:', window.currentExecutionId);
+                                            showRollbackButton();
+                                        }
+                                    }
+                                });
+                        }, 500);
+                    }
+                } else {
+                    alert('执行失败: ' + (data.error || data.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-play"></i> 执行计划';
+                alert('请求失败: ' + error);
+            });
+        }
+
+        function loadExample() {
+            document.getElementById('planPrompt').value =
+                '创建一个检测计划来监控端口扫描攻击。当检测到同一IP在一分钟内访问超过20个端口时，' +
+                '发送高危告警并自动封锁该IP地址。同时记录详细日志供后续分析。';
+        }
+
+        function showRollbackButton() {
+            const rollbackBtn = document.getElementById('rollbackBtn');
+            if (rollbackBtn) {
+                rollbackBtn.style.display = 'inline-block';
+                console.log('撤回按钮已显示, execution_id:', window.currentExecutionId);
+            } else {
+                console.error('找不到撤回按钮元素');
+            }
+        }
+
+        function rollbackPlan() {
+            if (!window.currentExecutionId) {
+                alert('没有可撤回的操作');
+                return;
+            }
+
+            if (!confirm('确定要撤回刚才执行的计划吗？这将恢复到执行前的状态。')) {
+                return;
+            }
+
+            console.log('开始撤回, execution_id:', window.currentExecutionId);
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 撤回中...';
+
+            fetch('/api/ai/plan/rollback', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    execution_id: window.currentExecutionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+
+                console.log('撤回响应:', data);
+
+                if (data.success) {
+                    alert('撤回成功！\n' + data.message);
+                    // 隐藏主撤回按钮
+                    const mainRollbackBtn = document.getElementById('rollbackBtn');
+                    if (mainRollbackBtn) {
+                        mainRollbackBtn.style.display = 'none';
+                        console.log('主撤回按钮已隐藏');
+                    }
+                    // 清空当前执行ID
+                    window.currentExecutionId = null;
+                    // 刷新历史记录（这会更新历史记录中的撤回状态）
+                    loadExecutionHistory();
+                } else {
+                    alert('撤回失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                console.error('撤回请求失败:', error);
+                alert('请求失败: ' + error);
+            });
+        }
+
+        function loadExecutionHistory() {
+            fetch('/api/ai/plan/history')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.executions.length > 0) {
+                        displayHistory(data.executions);
+                    }
+                })
+                .catch(error => {
+                    console.error('加载历史失败:', error);
+                });
+        }
+
+        function displayHistory(executions) {
+            const historySection = document.getElementById('historySection');
+            const historyDiv = document.getElementById('executionHistory');
+
+            console.log('显示执行历史, 记录数:', executions.length);
+
+            if (executions.length === 0) {
+                historySection.style.display = 'none';
+                return;
+            }
+
+            historySection.style.display = 'block';
+
+            let html = '<div class="list-group">';
+            executions.forEach((exec, index) => {
+                const time = new Date(exec.timestamp).toLocaleString('zh-CN');
+                const canRollback = exec.can_rollback && exec.execution_id && !exec.rolled_back;
+                const isRolledBack = exec.rolled_back;
+
+                console.log(`记录 ${index}: execution_id=${exec.execution_id}, can_rollback=${exec.can_rollback}, rolled_back=${exec.rolled_back}`);
+
+                html += `
+                    <div class="list-group-item ${isRolledBack ? 'bg-light' : ''}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">执行 #${index + 1} ${isRolledBack ? '<span class="badge bg-secondary">已撤回</span>' : ''}</h6>
+                                <small class="text-muted">${time}</small>
+                                ${exec.execution_id ? '<br><small class="text-muted">ID: ' + exec.execution_id + '</small>' : ''}
+                                ${isRolledBack && exec.rolled_back_at ? '<br><small class="text-muted">撤回时间: ' + new Date(exec.rolled_back_at).toLocaleString('zh-CN') + '</small>' : ''}
+                            </div>
+                            <div>
+                                <span class="badge bg-info">成功: ${exec.executed}</span>
+                                ${exec.failed > 0 ? '<span class="badge bg-danger ms-1">失败: ' + exec.failed + '</span>' : ''}
+                                ${canRollback ? '<button class="btn btn-sm btn-warning ms-2" onclick="rollbackFromHistory(\'' + exec.execution_id + '\')">' +
+                                    '<i class="fa fa-undo"></i> 撤回</button>' : ''}
+                                ${isRolledBack ? '<span class="badge bg-success ms-2"><i class="fa fa-check"></i> 已撤回</span>' : ''}
+                            </div>
+                        </div>
+                        <small class="text-muted">操作数: ${exec.total_operations}</small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            historyDiv.innerHTML = html;
+        }
+
+        function rollbackFromHistory(executionId) {
+            window.currentExecutionId = executionId;
+            rollbackPlan();
+        }
+
+        // 页面加载时加载历史记录
+        loadExecutionHistory();
+    </script>
+</body>
+</html>

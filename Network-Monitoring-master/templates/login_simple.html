@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 网络入侵检测与防御系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-title {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(180, 220, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(180, 220, 255, 0.2), rgba(138, 180, 255, 0.2));
+            border: 1px solid rgba(180, 220, 255, 0.3);
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, rgba(180, 220, 255, 0.3), rgba(138, 180, 255, 0.3));
+            box-shadow: 0 0 20px rgba(180, 220, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: rgba(180, 220, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: rgba(180, 220, 255, 1);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-title">系统登录</h1>
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" name="username" placeholder="输入用户名" required>
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" name="password" placeholder="输入密码" required>
+            </div>
+            <button type="submit" class="btn-login">登录</button>
+        </form>
+        <div class="back-link">
+            <a href="/">← 返回首页</a>
+        </div>
+    </div>
+</body>
+</html>

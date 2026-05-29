@@ -1,0 +1,597 @@
+{% extends "admin/base.html" %}
+
+{% block title %}系统设置 - IDS后台管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h2 class="mb-4">系统设置</h2>
+
+    <!-- 选项卡 -->
+    <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                <i class="bi bi-gear me-2"></i>基本设置
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mail-tab" data-bs-toggle="tab" data-bs-target="#mail" type="button" role="tab">
+                <i class="bi bi-envelope me-2"></i>邮件配置
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
+                <i class="bi bi-database me-2"></i>备份恢复
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="maintenance-tab" data-bs-toggle="tab" data-bs-target="#maintenance" type="button" role="tab">
+                <i class="bi bi-tools me-2"></i>维护模式
+            </button>
+        </li>
+    </ul>
+
+    <!-- 选项卡内容 -->
+    <div class="tab-content" id="settingsTabsContent">
+        <!-- 基本设置 -->
+        <div class="tab-pane fade show active" id="basic" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">基本系统设置</h5>
+                </div>
+                <div class="card-body">
+                    <form id="basic-settings-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">系统名称</label>
+                                <input type="text" class="form-control" name="system_name" value="">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">系统版本</label>
+                                <input type="text" class="form-control" name="system_version" value="" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">时区</label>
+                                <select class="form-select" name="timezone">
+                                    <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+                                    <option value="Asia/Hong_Kong">Asia/Hong_Kong (UTC+8)</option>
+                                    <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                                    <option value="America/New_York">America/New_York (UTC-5)</option>
+                                    <option value="Europe/London">Europe/London (UTC+0)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">语言</label>
+                                <select class="form-select" name="language">
+                                    <option value="zh_CN">简体中文</option>
+                                    <option value="zh_TW">繁体中文</option>
+                                    <option value="en_US">English</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">会话超时时间（秒）</label>
+                                <input type="number" class="form-control" name="session_timeout" value="3600">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">最大登录尝试次数</label>
+                                <input type="number" class="form-control" name="max_login_attempts" value="5">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">登录锁定时长（秒）</label>
+                                <input type="number" class="form-control" name="login_lockout_duration" value="900">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">日志保留天数</label>
+                                <input type="number" class="form-control" name="log_retention_days" value="30">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">备份保留天数</label>
+                                <input type="number" class="form-control" name="backup_retention_days" value="7">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">监控间隔（秒）</label>
+                                <input type="number" class="form-control" name="monitoring_interval" value="5">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveBasicSettings()">
+                        <i class="bi bi-check-lg me-1"></i>保存设置
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetBasicSettings()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重置默认
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 邮件配置 -->
+        <div class="tab-pane fade" id="mail" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">邮件服务器配置</h5>
+                </div>
+                <div class="card-body">
+                    <form id="mail-settings-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">SMTP服务器</label>
+                                <input type="text" class="form-control" name="smtp_server" placeholder="smtp.gmail.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">SMTP端口</label>
+                                <input type="number" class="form-control" name="smtp_port" value="587">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">邮箱用户名</label>
+                                <input type="email" class="form-control" name="username" placeholder="your@email.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">邮箱密码</label>
+                                <input type="password" class="form-control" name="password" placeholder="邮箱密码或应用专用密码">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">发件人地址</label>
+                            <input type="email" class="form-control" name="mail_from" placeholder="noreply@ids.com">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="use_tls" id="use_tls" checked>
+                                <label class="form-check-label" for="use_tls">
+                                    使用TLS加密连接
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="enabled" id="mail_enabled">
+                                <label class="form-check-label" for="mail_enabled">
+                                    启用邮件通知
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveMailSettings()">
+                        <i class="bi bi-check-lg me-1"></i>保存配置
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="showTestMailModal()">
+                        <i class="bi bi-send me-1"></i>发送测试邮件
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 备份恢复 -->
+        <div class="tab-pane fade" id="backup" role="tabpanel">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">备份记录</h5>
+                            <button class="btn btn-primary btn-sm" onclick="createBackup()">
+                                <i class="bi bi-download me-1"></i>创建备份
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>文件名</th>
+                                            <th>大小</th>
+                                            <th>描述</th>
+                                            <th>创建时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="backups-table">
+                                        <tr><td colspan="5" class="text-center">加载中...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="backups-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">备份说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-info-circle text-info me-2"></i>
+                                    备份文件保存在 <code>backups</code> 目录
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    恢复备份前会自动创建当前数据库的备份
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-shield-check text-success me-2"></i>
+                                    建议定期创建备份以确保数据安全
+                                </li>
+                            </ul>
+                            <hr>
+                            <h6>存储统计</h6>
+                            <p class="text-muted small">备份保留天数: <span id="backup-retention">7</span> 天</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 维护模式 -->
+        <div class="tab-pane fade" id="maintenance" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">维护模式设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        开启维护模式后，普通用户将无法访问系统，仅管理员可以登录。
+                    </div>
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="maintenance-mode-switch">
+                            <label class="form-check-label" for="maintenance-mode-switch">
+                                <strong>启用维护模式</strong>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">维护提示信息</label>
+                        <textarea class="form-control" id="maintenance-message" rows="4" placeholder="系统正在维护中，请稍后再访问"></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <strong>当前状态：</strong>
+                        <span id="maintenance-status">加载中...</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveMaintenanceSettings()">
+                        <i class="bi bi-check-lg me-1"></i>保存设置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 测试邮件模态框 -->
+<div class="modal fade" id="testMailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">发送测试邮件</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="test-mail-form">
+                    <div class="mb-3">
+                        <label class="form-label">收件人邮箱</label>
+                        <input type="email" class="form-control" name="to_email" placeholder="test@example.com" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="sendTestMail()">发送</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 创建备份模态框 -->
+<div class="modal fade" id="createBackupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">创建数据备份</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-backup-form">
+                    <div class="mb-3">
+                        <label class="form-label">备份描述</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="例如: 升级前备份"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitCreateBackup()">创建备份</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadBasicSettings();
+    loadMailSettings();
+    loadBackups();
+    loadMaintenanceStatus();
+
+    // 切换标签页时加载数据
+    document.querySelectorAll('#settingsTabs button').forEach(button => {
+        button.addEventListener('shown.bs.tab', function(event) {
+            const tabId = event.target.id.replace('-tab', '');
+            if (tabId === 'backup') {
+                loadBackups();
+            } else if (tabId === 'maintenance') {
+                loadMaintenanceStatus();
+            }
+        });
+    });
+});
+
+// 加载基本设置
+function loadBasicSettings() {
+    apiRequest('/admin/api/system/configs', 'GET', function(response) {
+        if (response.success) {
+            const configs = response.data;
+            const form = document.getElementById('basic-settings-form');
+
+            Object.keys(configs).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = configs[key];
+                    } else {
+                        input.value = configs[key];
+                    }
+                }
+            });
+        }
+    });
+}
+
+// 保存基本设置
+function saveBasicSettings() {
+    const form = document.getElementById('basic-settings-form');
+    const formData = new FormData(form);
+    const configs = {};
+
+    for (const [key, value] of formData.entries()) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input.type === 'number') {
+            configs[key] = parseInt(value) || 0;
+        } else {
+            configs[key] = value;
+        }
+    }
+
+    apiRequest('/admin/api/system/configs/batch', 'PUT', {configs: configs}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 重置基本设置
+function resetBasicSettings() {
+    if (!confirm('确认要重置为默认配置吗？')) return;
+
+    apiRequest('/admin/api/system/configs/reset', 'POST', {}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadBasicSettings();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 加载邮件配置
+function loadMailSettings() {
+    apiRequest('/admin/api/system/mail/config', 'GET', function(response) {
+        if (response.success) {
+            const config = response.data;
+            const form = document.getElementById('mail-settings-form');
+
+            if (config.smtp_server) form.querySelector('[name="smtp_server"]').value = config.smtp_server;
+            if (config.smtp_port) form.querySelector('[name="smtp_port"]').value = config.smtp_port;
+            if (config.mail_username) form.querySelector('[name="username"]').value = config.mail_username;
+            if (config.mail_from) form.querySelector('[name="mail_from"]').value = config.mail_from;
+            form.querySelector('#use_tls').checked = config.use_tls;
+            form.querySelector('#mail_enabled').checked = config.enabled;
+        }
+    });
+}
+
+// 保存邮件配置
+function saveMailSettings() {
+    const form = document.getElementById('mail-settings-form');
+    const formData = new FormData(form);
+    const data = {
+        smtp_server: formData.get('smtp_server'),
+        smtp_port: parseInt(formData.get('smtp_port')) || 587,
+        username: formData.get('username'),
+        password: formData.get('password'),
+        mail_from: formData.get('mail_from'),
+        use_tls: document.getElementById('use_tls').checked,
+        enabled: document.getElementById('mail_enabled').checked
+    };
+
+    apiRequest('/admin/api/system/mail/config', 'PUT', data, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 发送测试邮件
+function showTestMailModal() {
+    document.getElementById('test-mail-form').reset();
+    new bootstrap.Modal(document.getElementById('testMailModal')).show();
+}
+
+function sendTestMail() {
+    const toEmail = document.querySelector('#test-mail-form [name="to_email"]').value;
+    if (!toEmail) {
+        showToast('warning', '请输入收件人邮箱');
+        return;
+    }
+
+    apiRequest('/admin/api/system/mail/test', 'POST', {to_email: toEmail}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            bootstrap.Modal.getInstance(document.getElementById('testMailModal')).hide();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 加载备份记录
+function loadBackups(page = 1) {
+    currentPage = page;
+    apiRequest(`/admin/api/system/backups?page=${page}&per_page=10`, 'GET', function(response) {
+        if (response.success) {
+            renderBackups(response.data.backups);
+            renderPagination('backups-pagination', response.data.total, response.data.per_page, page, 'loadBackups');
+        }
+    });
+}
+
+// 渲染备份记录
+function renderBackups(backups) {
+    const tbody = document.getElementById('backups-table');
+    if (backups.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无备份记录</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = backups.map(backup => `
+        <tr>
+            <td><code class="small">${backup.filename}</code></td>
+            <td>${formatFileSize(backup.file_size)}</td>
+            <td>${backup.description || '-'}</td>
+            <td>${formatDateTime(backup.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="restoreBackup(${backup.id})" title="恢复">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteBackup(${backup.id})" title="删除">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 创建备份
+function createBackup() {
+    document.getElementById('create-backup-form').reset();
+    new bootstrap.Modal(document.getElementById('createBackupModal')).show();
+}
+
+function submitCreateBackup() {
+    const description = document.querySelector('#create-backup-form [name="description"]').value;
+
+    apiRequest('/admin/api/system/backups', 'POST', {description: description}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            bootstrap.Modal.getInstance(document.getElementById('createBackupModal')).hide();
+            loadBackups(currentPage);
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 恢复备份
+function restoreBackup(backupId) {
+    if (!confirm('确认要恢复此备份吗？恢复前会自动创建当前数据库的备份。')) return;
+
+    apiRequest(`/admin/api/system/backups/${backupId}/restore`, 'POST', {}, function(response) {
+        if (response.success) {
+            showToast('success', response.message + '，请重启系统以生效');
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 删除备份
+function deleteBackup(backupId) {
+    if (!confirm('确认删除此备份吗？此操作不可恢复。')) return;
+
+    apiRequest(`/admin/api/system/backups/${backupId}`, 'DELETE', null, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadBackups(currentPage);
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 加载维护模式状态
+function loadMaintenanceStatus() {
+    apiRequest('/admin/api/system/maintenance/status', 'GET', function(response) {
+        if (response.success) {
+            const status = response.data;
+            document.getElementById('maintenance-mode-switch').checked = status.enabled;
+            document.getElementById('maintenance-message').value = status.message || '';
+            document.getElementById('maintenance-status').textContent = status.enabled ? '维护中' : '正常运行';
+            document.getElementById('maintenance-status').className = status.enabled ? 'badge bg-warning' : 'badge bg-success';
+        }
+    });
+
+    // 获取备份保留天数
+    apiRequest('/admin/api/system/configs', 'GET', function(response) {
+        if (response.success && response.data.backup_retention_days) {
+            document.getElementById('backup-retention').textContent = response.data.backup_retention_days;
+        }
+    });
+}
+
+// 保存维护模式设置
+function saveMaintenanceSettings() {
+    const enabled = document.getElementById('maintenance-mode-switch').checked;
+    const message = document.getElementById('maintenance-message').value;
+
+    apiRequest('/admin/api/system/maintenance', 'PUT', {enabled: enabled, message: message}, function(response) {
+        if (response.success) {
+            showToast('success', response.message);
+            loadMaintenanceStatus();
+        } else {
+            showToast('error', response.message);
+        }
+    });
+}
+
+// 工具函数
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+</script>
+{% endblock %}

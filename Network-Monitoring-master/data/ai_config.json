@@ -1,0 +1,8 @@
+{
+  "AI_BASE_URL": "https://api.deepseek.com/v1",
+  "AI_MODEL": "deepseek-chat",
+  "AI_API_KEY": "sk-94116f29a81748f9885b61f88b8fe462",
+  "AI_TIMEOUT": 30,
+  "AI_ENABLED": true,
+  "AI_MOCK_MODE": false
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "threat_id": "THREAT-1776608610-9963",
+    "timestamp": "2026-04-19T22:23:30.695946",
+    "threat_type": "XSS\u653b\u51fb",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.157",
+    "dst_ip": "10.0.0.232",
+    "port": 51521,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230XSS\u653b\u51fb\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776608615-5215",
+    "timestamp": "2026-04-19T22:23:35.701771",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.85",
+    "dst_ip": "10.0.0.63",
+    "port": 59391,
+    "protocol": "TCP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776608640-7490",
+    "timestamp": "2026-04-19T22:24:00.705764",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.237",
+    "dst_ip": "10.0.0.94",
+    "port": 36829,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776608650-6742",
+    "timestamp": "2026-04-19T22:24:10.708124",
+    "threat_type": "\u75c5\u6bd2/\u6728\u9a6c",
+    "severity": "\u4f4e",
+    "src_ip": "192.168.1.204",
+    "dst_ip": "10.0.0.64",
+    "port": 2273,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u75c5\u6bd2/\u6728\u9a6c\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776608655-5176",
+    "timestamp": "2026-04-19T22:24:15.709216",
+    "threat_type": "\u5f02\u5e38\u6d41\u91cf",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.76",
+    "dst_ip": "10.0.0.148",
+    "port": 48075,
+    "protocol": "HTTP",
+    "details": "\u68c0\u6d4b\u5230\u5f02\u5e38\u6d41\u91cf\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  },
+  {
+    "threat_id": "THREAT-1776608685-3340",
+    "timestamp": "2026-04-19T22:24:45.715651",
+    "threat_type": "SQL\u6ce8\u5165",
+    "severity": "\u9ad8",
+    "src_ip": "192.168.1.155",
+    "dst_ip": "10.0.0.58",
+    "port": 48400,
+    "protocol": "UDP",
+    "details": "\u68c0\u6d4b\u5230SQL\u6ce8\u5165\u653b\u51fb\u5c1d\u8bd5",
+    "blocked": false,
+    "action_taken": "\u76d1\u63a7"
+  }
+]

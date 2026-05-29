@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>网络监控测试</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>网络监控数据测试</h1>
+    <div id="result">正在加载数据...</div>
+    <table id="packetTable" border="1" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>时间</th>
+                <th>源IP</th>
+                <th>目标IP</th>
+                <th>协议</th>
+                <th>源端口</th>
+                <th>目标端口</th>
+                <th>长度</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+    $.get('/api/packets', function(data) {
+        $('#result').text('成功加载 ' + data.length + ' 条数据包');
+        data.forEach(packet => {
+            $('#packetTable tbody').append(`
+                <tr>
+                    <td>${packet.timestamp}</td>
+                    <td>${packet.src_ip}</td>
+                    <td>${packet.dst_ip}</td>
+                    <td>${packet.protocol}</td>
+                    <td>${packet.src_port}</td>
+                    <td>${packet.dst_port}</td>
+                    <td>${packet.length}</td>
+                </tr>
+            `);
+        });
+    }).fail(function(xhr) {
+        $('#result').text('加载失败: ' + xhr.status);
+    });
+    </script>
+</body>
+</html>

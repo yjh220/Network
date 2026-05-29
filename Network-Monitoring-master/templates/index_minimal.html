@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 纯深邃哑光黑底 */
+        body {
+            background: #0a0a0f;
+            position: relative;
+        }
+
+        /* 粒子画布 */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 主要内容层 */
+        .content-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 中央标题 - 极简高级 */
+        .main-title {
+            font-size: 5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: 0.5em;
+            text-align: center;
+            text-shadow: 0 0 40px rgba(180, 220, 255, 0.15);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* 右上角按钮区域 */
+        .top-buttons {
+            position: fixed;
+            top: 40px;
+            right: 50px;
+            z-index: 100;
+            display: flex;
+            gap: 25px;
+        }
+
+        .top-btn {
+            padding: 10px 28px;
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 2px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .top-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(180, 220, 255, 0.4);
+            box-shadow: 0 0 20px rgba(180, 220, 255, 0.15);
+        }
+
+        /* AI小人按钮 */
+        .ai-assistant-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 50px;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(95, 165, 155, 0.9), rgba(61, 110, 102, 0.9));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(95, 165, 155, 0.4);
+        }
+
+        .ai-assistant-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(95, 165, 155, 0.6);
+        }
+
+        .ai-assistant-btn::after {
+            content: "🤖";
+            font-size: 28px;
+        }
+
+        /* AI提示框 */
+        .ai-tooltip {
+            position: fixed;
+            bottom: 110px;
+            right: 50px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* AI智能体菜单 */
+        .ai-menu {
+            position: fixed;
+            bottom: 110px;
+            right: 50px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 15px;
+            min-width: 200px;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-menu.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .ai-menu-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-menu-item {
+            display: block;
+            padding: 10px 15px;
+            color: #3d3d5c;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .ai-menu-item:hover {
+            background: rgba(95, 165, 155, 0.15);
+            color: #1a1a2e;
+        }
+
+        .ai-menu-item .icon {
+            margin-right: 8px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+                letter-spacing: 0.3em;
+            }
+            .top-buttons {
+                top: 25px;
+                right: 25px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            .ai-assistant-btn {
+                bottom: 25px;
+                right: 25px;
+                width: 50px;
+                height: 50px;
+            }
+            .ai-assistant-btn::after {
+                font-size: 24px;
+            }
+            .ai-tooltip, .ai-menu {
+                right: 25px;
+                bottom: 85px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="content-layer">
+        <h1 class="main-title">CREATIVE DIGITAL.</h1>
+    </div>
+
+    <!-- 右上角按钮 -->
+    <div class="top-buttons" id="topButtons">
+        <a href="/login" class="top-btn">Login</a>
+        <a href="/register" class="top-btn">Register</a>
+    </div>
+
+    <!-- AI小人按钮 -->
+    <div class="ai-assistant-btn" id="aiAssistantBtn"></div>
+
+    <!-- AI提示框 -->
+    <div class="ai-tooltip" id="aiTooltip">请先登录</div>
+
+    <!-- AI智能体菜单 -->
+    <div class="ai-menu" id="aiMenu">
+        <div class="ai-menu-title">AI 智能体</div>
+        <a href="/ai/copilot" class="ai-menu-item">
+            <span class="icon">💬</span> AI 安全助手
+        </a>
+        <a href="/ai/planner" class="ai-menu-item">
+            <span class="icon">📋</span> AI 检测计划
+        </a>
+        <a href="/ai/rules" class="ai-menu-item">
+            <span class="icon">📝</span> AI 规则生成
+        </a>
+    </div>
+
+    <script>
+        // 从 cookie 获取值
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // 清除所有 cookie
+        function clearAllCookies() {
+            document.cookie.split(";").forEach(c => {
+                document.cookie = c.trim().split("=")[0] +
+                    '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            });
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const isLoggedIn = getCookie('isLoggedIn') === 'true';
+            // Debug: 在控制台显示登录状态
+            console.log('Cookie isLoggedIn:', getCookie('isLoggedIn'));
+            console.log('Check result:', isLoggedIn);
+            return isLoggedIn;
+        }
+
+        // 设置登录状态
+        function setLoginStatus(loggedIn) {
+            document.cookie = `isLoggedIn=${loggedIn}; path=/; max-age=${60*60*24*7}`;
+            updateUI();
+        }
+
+        // 更新UI
+        function updateUI() {
+            const isLoggedIn = checkLoginStatus();
+            const topButtons = document.getElementById('topButtons');
+
+            if (isLoggedIn) {
+                topButtons.innerHTML = '<a href="/home" class="top-btn">进入主页</a><a href="#" onclick="logout(); return false;" class="top-btn" style="font-size: 0.75rem; padding: 10px 18px;">退出</a>';
+            } else {
+                topButtons.innerHTML = '<a href="/login" class="top-btn">Login</a><a href="/register" class="top-btn">Register</a>';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            clearAllCookies();
+            updateUI();
+        }
+
+        // AI小人点击事件
+        const aiBtn = document.getElementById('aiAssistantBtn');
+        const aiTooltip = document.getElementById('aiTooltip');
+        const aiMenu = document.getElementById('aiMenu');
+        let menuOpen = false;
+
+        aiBtn.addEventListener('click', () => {
+            if (!checkLoginStatus()) {
+                // 未登录：显示提示
+                aiTooltip.classList.add('show');
+                setTimeout(() => {
+                    aiTooltip.classList.remove('show');
+                }, 2000);
+            } else {
+                // 已登录：切换菜单
+                menuOpen = !menuOpen;
+                if (menuOpen) {
+                    aiMenu.classList.add('show');
+                } else {
+                    aiMenu.classList.remove('show');
+                }
+            }
+        });
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!aiBtn.contains(e.target) && !aiMenu.contains(e.target)) {
+                menuOpen = false;
+                aiMenu.classList.remove('show');
+            }
+        });
+
+        // 页面加载时更新UI（添加错误处理）
+        window.addEventListener('DOMContentLoaded', function() {
+            try {
+                updateUI();
+            } catch (error) {
+                console.error('UI update error:', error);
+                // 设置默认UI
+                const topButtons = document.getElementById('topButtons');
+                if (topButtons) {
+                    topButtons.innerHTML = '<a href="/login" class="top-btn">登录</a><a href="/register" class="top-btn">注册</a>';
+                }
+            }
+        });
+
+        // 登录页面设置登录状态
+        if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+            // 登录成功后设置状态
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args).then(response => {
+                    // 简化：假设POST到login就是登录成功
+                    if (args[0] && args[0].includes('/login') && args[1]?.method === 'POST') {
+                        setLoginStatus(true);
+                    }
+                    return response;
+                });
+            };
+        }
+
+        /**
+         * 极简未来科技风粒子系统
+         * 冷白+浅冰蓝配色，柔和磁吸交互
+         */
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置画布尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 粒子配置 - 柔和参数
+        const config = {
+            particleCount: 200,  // 增加粒子数量
+            connectionDistance: 120,  // 增加连接距离
+            mouseInfluenceRadius: 180,
+            particleSpeed: 0.25,
+            mouseAttractionStrength: 0.02
+        };
+
+        // 粒子类
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * config.particleSpeed;
+                this.vy = (Math.random() - 0.5) * config.particleSpeed;
+                this.radius = Math.random() * 2 + 1;
+                this.baseOpacity = Math.random() * 0.5 + 0.4;
+                this.opacity = this.baseOpacity;
+                this.pulseSpeed = Math.random() * 0.02 + 0.01;
+                this.pulseOffset = Math.random() * Math.PI * 2;
+            }
+
+            update(mouseX, mouseY, mouseActive) {
+                if (mouseActive) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < config.mouseInfluenceRadius) {
+                        const force = (config.mouseInfluenceRadius - distance) / config.mouseInfluenceRadius;
+                        const easeFactor = force * force * (3 - 2 * force);
+                        this.vx += dx * easeFactor * config.mouseAttractionStrength;
+                        this.vy += dy * easeFactor * config.mouseAttractionStrength;
+                        this.opacity = this.baseOpacity + force * 0.4;
+                    } else {
+                        this.opacity = this.baseOpacity;
+                    }
+                }
+
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed < config.particleSpeed * 0.3) {
+                    this.vx += (Math.random() - 0.5) * 0.01;
+                    this.vy += (Math.random() - 0.5) * 0.01;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                this.x = Math.max(0, Math.min(canvas.width, this.x));
+                this.y = Math.max(0, Math.min(canvas.height, this.y));
+            }
+
+            draw() {
+                const pulse = Math.sin(Date.now() * this.pulseSpeed + this.pulseOffset) * 0.15 + 0.85;
+                const currentOpacity = this.opacity * pulse;
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.radius * 5
+                );
+                gradient.addColorStop(0, `rgba(96, 165, 250, ${currentOpacity * 0.9})`);
+                gradient.addColorStop(0.4, `rgba(59, 130, 246, ${currentOpacity * 0.4})`);
+                gradient.addColorStop(1, `rgba(59, 130, 246, 0)`);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 5, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(96, 165, 250, ${currentOpacity})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(59, 130, 246, 0.8)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        const particles = [];
+        for (let i = 0; i < config.particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let mouseActive = false;
+        let mouseInactiveTimer;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            mouseActive = true;
+            clearTimeout(mouseInactiveTimer);
+            mouseInactiveTimer = setTimeout(() => {
+                mouseActive = false;
+            }, 1500);
+        });
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < config.connectionDistance) {
+                        const opacity = (1 - distance / config.connectionDistance) * 0.35;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(96, 165, 250, ${opacity})`;
+                        ctx.lineWidth = 1;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = 'rgba(59, 130, 246, 0.3)';
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+        }
+
+        let lastTime = 0;
+        const targetFPS = 60;
+        const frameInterval = 1000 / targetFPS;
+
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+            const deltaTime = currentTime - lastTime;
+            if (deltaTime < frameInterval) return;
+            lastTime = currentTime - (deltaTime % frameInterval);
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update(mouseX, mouseY, mouseActive);
+                particle.draw();
+            });
+
+            drawConnections();
+        }
+
+        animate(0);
+    </script>
+
+    <!-- SDN智能体聊天机器人 -->
+    {% include 'admin/intent_chatbot.html' %}
+</body>
+</html>

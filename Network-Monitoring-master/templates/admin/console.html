@@ -1,0 +1,313 @@
+{% extends "admin/base.html" %}
+
+{% block title %}控制台 - 后台管理系统{% endblock %}
+
+{% block page_title %}控制台{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="label">今日告警</div>
+                    <div class="value" id="todayAlerts">0</div>
+                </div>
+                <div class="icon warning">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="label">活跃威胁</div>
+                    <div class="value" id="activeThreats">0</div>
+                </div>
+                <div class="icon danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="label">系统用户</div>
+                    <div class="value" id="totalUsers">0</div>
+                </div>
+                <div class="icon primary">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="label">运行时长</div>
+                    <div class="value" id="systemUptime">-</div>
+                </div>
+                <div class="icon success">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="stat-card h-100">
+            <h5 class="card-title mb-3">流量趋势</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="stat-card h-100">
+            <h5 class="card-title mb-3">威胁分布</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="threatChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row">
+    <div class="col-12">
+        <div class="stat-card">
+            <h5 class="card-title mb-3">系统状态</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>CPU使用率</span>
+                            <span id="cpuUsage">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" id="cpuBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>内存使用率</span>
+                            <span id="memoryUsage">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" id="memoryBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>磁盘使用率</span>
+                            <span id="diskUsage">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" id="diskBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <h6 class="mb-3">最近操作日志</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>用户</th>
+                                    <th>操作</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentLogs">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">加载中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let trafficChart, threatChart;
+
+// Load Console Data
+async function loadConsoleData() {
+    try {
+        const response = await apiRequest('/admin/api/console/stats');
+        const data = response.data;
+
+        // Update statistics
+        document.getElementById('todayAlerts').textContent = data.today_alerts;
+        document.getElementById('activeThreats').textContent = data.active_threats;
+        document.getElementById('totalUsers').textContent = data.total_users;
+        document.getElementById('systemUptime').textContent = data.system_uptime;
+
+        // Update system status
+        document.getElementById('cpuUsage').textContent = data.cpu_usage + '%';
+        document.getElementById('cpuBar').style.width = data.cpu_usage + '%';
+
+        document.getElementById('memoryUsage').textContent = data.memory_usage + '%';
+        document.getElementById('memoryBar').style.width = data.memory_usage + '%';
+
+        document.getElementById('diskUsage').textContent = data.disk_usage + '%';
+        document.getElementById('diskBar').style.width = data.disk_usage + '%';
+
+    } catch (error) {
+        console.error('Failed to load console data:', error);
+    }
+}
+
+// Load Trend Data
+async function loadTrendData() {
+    try {
+        const response = await apiRequest('/admin/api/console/trends');
+        const data = response.data;
+
+        // Prepare traffic chart data
+        const labels = data.map(item => {
+            const date = new Date(item.timestamp);
+            return date.getHours() + ':00';
+        });
+        const trafficIn = data.map(item => item.traffic_in);
+        const trafficOut = data.map(item => item.traffic_out);
+
+        // Create traffic chart
+        const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+        trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '入站流量',
+                        data: trafficIn,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '出站流量',
+                        data: trafficOut,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create threat distribution chart
+        const threatCtx = document.getElementById('threatChart').getContext('2d');
+        threatChart = new Chart(threatCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['DDoS', '端口扫描', 'SQL注入', 'XSS', '暴力破解'],
+                datasets: [{
+                    data: [30, 20, 15, 10, 25],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b',
+                        '#eab308',
+                        '#22c55e',
+                        '#3b82f6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Failed to load trend data:', error);
+    }
+}
+
+// Load Recent Logs
+async function loadRecentLogs() {
+    try {
+        const response = await apiRequest('/admin/api/logs/operation?per_page=5');
+        const logs = response.data.logs;
+
+        const tbody = document.getElementById('recentLogs');
+        if (logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">暂无日志</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td>${log.username}</td>
+                <td>${log.action}</td>
+                <td>${formatDate(log.created_at)}</td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Failed to load recent logs:', error);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadConsoleData();
+    loadTrendData();
+    loadRecentLogs();
+
+    // Auto refresh every 30 seconds
+    setInterval(() => {
+        loadConsoleData();
+        loadRecentLogs();
+    }, 30000);
+});
+</script>
+{% endblock %}
